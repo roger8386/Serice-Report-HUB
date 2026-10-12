@@ -16,34 +16,72 @@
       --text-sub: #94a3b8;
       --accent: #38bdf8;
       --border: #26354a;
+      --border-focus: #38bdf8;
       --alarm-red: #ef4444;
       --alarm-title: #fca5a5;
       --btn-bg: #0284c7;
       --btn-hover: #0369a1;
-      --step-badge: #0369a1;
+      --step-badge: #0284c7;
       --success-green: #10b981;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif; }
     body { background-color: var(--bg); color: var(--text-main); padding: 24px; line-height: 1.5; }
-    .container { max-width: 1050px; margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    
+    /* Header layout */
+    header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 24px; 
+      gap: 16px; 
+    }
+    .header-text { flex: 1; min-width: 260px; }
     h1 { font-size: 1.85rem; color: var(--accent); margin-bottom: 4px; }
-    .sync-status { font-size: 0.85rem; color: var(--success-green); font-weight: 600; display: flex; align-items: center; gap: 6px; }
-    .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    
+    .header-controls { 
+      display: flex; 
+      gap: 8px; 
+      align-items: center; 
+      flex-wrap: nowrap; 
+      justify-content: flex-end; 
+    }
+    .sync-status { 
+      font-size: 0.82rem; 
+      color: var(--success-green); 
+      font-weight: 600; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      white-space: nowrap; 
+      margin-right: 4px;
+    }
+    .admin-indicator {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success-green);
+      color: var(--success-green);
+      white-space: nowrap;
+    }
 
-    .btn { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: background 0.2s ease; }
+    .btn { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
     .btn-primary { background-color: var(--btn-bg); color: #fff; }
     .btn-primary:hover { background-color: var(--btn-hover); }
     .btn-danger { background-color: var(--alarm-red); color: #fff; }
+    .btn-danger:hover { background-color: #dc2626; }
     .btn-secondary { background-color: var(--border); color: var(--text-main); }
     .btn-secondary:hover { background-color: #334661; }
 
     .step-box { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
     .step-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 700; margin-bottom: 10px; display: block; }
-    select, input, textarea { width: 100%; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--panel-bg); color: var(--text-main); font-size: 1rem; outline: none; }
-    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+    select, input, textarea { width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--panel-bg); color: var(--text-main); font-size: 0.95rem; outline: none; }
+    select:focus, input:focus, textarea:focus { border-color: var(--border-focus); }
 
+    /* Accordion Problem Card */
     .problem-list { display: flex; flex-direction: column; gap: 12px; }
     .problem-item { border: 1px solid var(--border); background-color: var(--panel-bg); border-radius: 6px; overflow: hidden; transition: border-color 0.2s ease; }
     .problem-item:hover { border-color: #3b506f; }
@@ -51,25 +89,73 @@
     .problem-title { font-size: 1rem; font-weight: 600; color: var(--alarm-title); display: flex; align-items: center; gap: 10px; }
     .icon-toggle { color: var(--text-sub); font-size: 0.85rem; transition: transform 0.2s ease; }
     .problem-item.active .icon-toggle { transform: rotate(180deg); }
-    .solution-body { display: none; padding: 18px 20px; background-color: rgba(0, 0, 0, 0.4); border-top: 1px solid var(--border); }
+    .solution-body { display: none; padding: 18px 20px; background-color: rgba(0, 0, 0, 0.45); border-top: 1px solid var(--border); }
     .problem-item.active .solution-body { display: block; }
 
-    .section-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 6px; }
-    .causes-box { margin-bottom: 16px; padding: 12px 14px; background-color: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--alarm-red); border-radius: 4px; color: #f1f5f9; font-size: 0.93rem; }
-    .steps-container { display: flex; flex-direction: column; gap: 10px; }
-    .step-card { background-color: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
-    .step-head { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.94rem; color: #e2e8f0; margin-bottom: 4px; }
-    .step-badge { background-color: var(--step-badge); color: #fff; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
-    .step-detail { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 6px; }
-    .step-verify { font-size: 0.85rem; color: #34d399; background-color: rgba(52, 211, 153, 0.08); padding: 6px 10px; border-radius: 4px; display: inline-block; width: 100%; }
-    .admin-item-actions { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; }
+    /* Paired Cause & Action Box */
+    .diagnostic-pair-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .diagnostic-pair-card:last-of-type { margin-bottom: 0; }
+    
+    .cause-row {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      background-color: rgba(239, 68, 68, 0.08);
+      border-left: 4px solid var(--alarm-red);
+      border-radius: 4px;
+    }
+    .cause-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #f87171; margin-bottom: 4px; display: block; }
+    .cause-text { font-size: 0.95rem; color: #f1f5f9; font-weight: 500; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
-    .modal-content { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; max-width: 650px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .action-row {
+      padding-left: 4px;
+    }
+    .action-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px; display: block; }
+    
+    .steps-container { display: flex; flex-direction: column; gap: 8px; }
+    .step-card { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #1f2d42; border-radius: 6px; padding: 10px 14px; }
+    .step-head { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.92rem; color: #e2e8f0; margin-bottom: 4px; }
+    .step-badge { background-color: var(--step-badge); color: #fff; font-size: 0.7rem; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+    .step-detail { font-size: 0.88rem; color: var(--text-sub); margin-bottom: 6px; }
+    .step-verify { font-size: 0.83rem; color: #34d399; background-color: rgba(52, 211, 153, 0.08); padding: 4px 8px; border-radius: 4px; display: inline-block; width: 100%; }
+    
+    .admin-item-actions { margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; }
+
+    /* Modals */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
+    .modal-content { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; max-width: 760px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto; }
     .modal-content h2 { font-size: 1.3rem; margin-bottom: 16px; color: var(--accent); }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    
+    /* Dynamic Modal Builder Blocks */
+    .modal-pair-block {
+      background-color: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .modal-pair-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .modal-pair-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px; }
     .placeholder-msg { color: var(--text-sub); font-style: italic; text-align: center; padding: 24px; }
     .hidden { display: none !important; }
   </style>
@@ -78,81 +164,64 @@
 
 <div class="container">
   <header>
-    <div>
+    <div class="header-text">
       <h1>AQMS & CEMS Cloud Diagnostic Hub</h1>
       <p style="color: var(--text-sub);">Real-time synchronized field diagnostic procedures.</p>
     </div>
     <div class="header-controls">
-      <span id="syncIndicator" class="sync-status">🟢 Connecting to Firebase...</span>
-      <span id="adminBadge" class="hidden" style="color: var(--success-green); font-weight: 600; font-size: 0.85rem;">Admin Active</span>
-      <button id="adminLoginBtn" class="btn btn-primary" onclick="handleAdminToggle()">Admin Login</button>
+      <span id="syncIndicator" class="sync-status">🟢 Connecting...</span>
+      <span id="adminBadge" class="admin-indicator hidden">Admin Active</span>
+      <button id="addModelBtn" class="btn btn-secondary hidden" onclick="promptAddNewModel()">+ Add Model</button>
       <button id="addIssueBtn" class="btn btn-secondary hidden" onclick="openAddIssueModal()">+ Add New Entry</button>
+      <button id="adminLoginBtn" class="btn btn-primary" onclick="handleAdminToggle()">Admin Login</button>
     </div>
   </header>
 
   <div class="step-box">
-    <label class="step-label" for="modelSelector">Step 1: Select Analyzer Model</label>
+    <label class="step-label" for="modelSelector">STEP 1: SELECT ANALYZER MODEL</label>
     <select id="modelSelector">
       <option value="">-- Select Model --</option>
-      <option value="48i">Model 48i (CO Infrared Gas Filter Correlation Analyzer)</option>
-      <option value="49i">Model 49i (UV Photometric O₃ Analyzer)</option>
-      <option value="55i">Model 55i (NMHC / CH₄ FID Analyzer)</option>
-      <option value="42i">Model 42i (NO-NO₂-NOₓ Chemiluminescence)</option>
-      <option value="43i">Model 43i (Pulsed Fluorescence SO₂)</option>
-      <option value="450i">Model 450i (Pulsed Fluorescence H₂S - SO₂)</option>
-      <option value="17i">Model 17i (Ammonia NH₃ Chemiluminescence)</option>
-      <option value="5014i">Model 5014i (Beta Particulate Monitor)</option>
-      <option value="5028i">Model 5028i (Dual Channel Beta Monitor PM10/PM2.5)</option>
-      <option value="111">Model 111 (Zero Air Supply with External Compressor)</option>
-      <option value="1150">Model 1150 (CO Catalyst Reactor Module)</option>
     </select>
   </div>
 
   <div class="step-box">
-    <span class="step-label">Steps 2 & 3: Alarms / Symptoms (Click to reveal Step-by-Step Procedure)</span>
+    <span class="step-label">Steps 2 & 3: Alarms & Paired Corrective Solutions</span>
     <div id="problemsContainer" class="problem-list">
       <div class="placeholder-msg">Select an analyzer model above to begin.</div>
     </div>
   </div>
 </div>
 
-<!-- Modal Entry Form -->
+<!-- Modal Entry Form with Dynamic Paired Inputs -->
 <div id="adminModal" class="modal-overlay hidden">
   <div class="modal-content">
     <h2 id="modalTitle">Troubleshooting Entry</h2>
     <input type="hidden" id="editIndex" value="-1">
     
     <div class="form-group">
-      <label for="editModel">Target Model</label>
-      <select id="editModel">
-        <option value="48i">Model 48i (CO)</option>
-        <option value="49i">Model 49i (O₃)</option>
-        <option value="55i">Model 55i (NMHC)</option>
-        <option value="42i">Model 42i (NOx)</option>
-        <option value="43i">Model 43i (SO₂)</option>
-        <option value="450i">Model 450i (H₂S-SO₂)</option>
-        <option value="17i">Model 17i (NH₃)</option>
-        <option value="5014i">Model 5014i (Beta)</option>
-        <option value="5028i">Model 5028i (Dual Beta)</option>
-        <option value="111">Model 111 (Zero Air)</option>
-        <option value="1150">Model 1150 (CO Reactor)</option>
-      </select>
+      <label for="editModelInput">Target Model:</label>
+      <input 
+        type="text" 
+        id="editModelInput" 
+        list="modelDatalist" 
+        placeholder="Select from list or type a new model..." 
+        required 
+      />
+      <datalist id="modelDatalist"></datalist>
     </div>
 
     <div class="form-group">
-      <label for="editProblem">Alarm / Issue Title</label>
-      <input type="text" id="editProblem" placeholder="...">
+      <label for="editProblem">Alarm / Issue Title:</label>
+      <input type="text" id="editProblem" placeholder="e.g. Alarm - Internal Temp">
     </div>
 
-    <div class="form-group">
-      <label for="editCauses">Probable Causes</label>
-      <textarea id="editCauses" rows="3" placeholder="..."></textarea>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px;">
+      <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase;">Causes & Corresponding Actions:</span>
+      <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="addCauseActionBlock()">+ Add Cause & Action Pair</button>
     </div>
 
-    <div class="form-group">
-      <label for="editStepsText">Steps (Format: Title | Detail | Verification)</label>
-      <textarea id="editStepsText" rows="6" placeholder="Check Filter | Inspect 47mm filter | Flow recovers"></textarea>
-    </div>
+    <!-- Container for dynamic paired blocks -->
+    <div id="pairsContainer"></div>
 
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeAdminModal()">Cancel</button>
@@ -162,7 +231,6 @@
 </div>
 
 <script>
-  // EXACT CONFIGURATION FROM YOUR FIREBASE PROJECT
   const firebaseConfig = {
     apiKey: "AIzaSyC61LascxfSDWGq-Bx5Xj_Am_9bVrt48y8",
     authDomain: "aqms-troubleshootin.firebaseapp.com",
@@ -185,265 +253,24 @@
     document.getElementById('syncIndicator').style.color = '#f59e0b';
   }
 
-  // DEFAULT DATABASE SEED
+  // Model Display Names matching Image 1
+  const modelDisplayNames = {
+    "48i": "Model 48i (CO Infrared Gas Filter Correlation Analyzer)",
+    "49i": "Model 49i (UV Photometric O₃ Analyzer)",
+    "55i": "Model 55i (NMHC / CH₄ FID Analyzer)",
+    "42i": "Model 42i (NO-NO₂-NOₓ Chemiluminescence)",
+    "43i": "Model 43i (Pulsed Fluorescence SO₂)",
+    "450i": "Model 450i (Pulsed Fluorescence H₂S - SO₂)",
+    "17i": "Model 17i (Ammonia NH₃ Chemiluminescence)",
+    "5014i": "Model 5014i (Beta Particulate Monitor)",
+    "5028i": "Model 5028i (Dual Channel Beta Monitor PM10/PM2.5)",
+    "111": "Model 111 (Zero Air Supply with External Compressor)",
+    "1150": "Model 1150 (CO Catalyst Reactor Module)"
+  };
+
   const defaultDatabase = {
-    "48i": [
-      {
-        problem: "Chamber / Internal Temperature Alarm",
-        causes: "Rear cooling fan failure, clogged ventilation slots or shelter air filters, loose thermistor cable, or temperature control board failure.",
-        steps: [
-          { title: "Inspect Chassis Fan", detail: "Check rear panel exhaust fan; ensure it is spinning smoothly and blowing warm air outwards.", verify: "Confirm continuous airflow at the rear exhaust." },
-          { title: "Clean Intake Filters", detail: "Remove accumulated dust from shelter AC filters and front panel vents.", verify: "Navigate to Diagnostics > Temperatures and verify chamber temp stabilizes at 45.0°C ± 1.0°C." },
-          { title: "Measure Thermistor Resistance", detail: "Power down unit, disconnect thermistor lead from Measurement Interface board, and measure resistance.", verify: "Multimeter should read ~10k ohms at 25°C." }
-        ]
-      },
-      {
-        problem: "Flow / Pressure Alarm (Low Flow)",
-        causes: "Clogged 47mm particulate filter, loose pneumatic fittings, blocked flow capillary, or pump diaphragm wear.",
-        steps: [
-          { title: "Replace Particulate Filter", detail: "Unscrew 47mm filter holder on rear panel and replace dirty Teflon membrane filter.", verify: "Ensure Teflon O-ring is properly seated without pinching." },
-          { title: "Perform Vacuum Leak Check", detail: "Cap Sample Inlet tightly with a leak-proof plug.", verify: "Sample flow reading must drop below 0.05 LPM within 60 seconds." },
-          { title: "Clean Critical Capillary", detail: "Remove capillary, inspect under optical magnifier, and back-flush using dry nitrogen.", verify: "Flow returns to nominal range of 0.50–1.0 LPM." }
-        ]
-      },
-      {
-        problem: "AGC Intensity / Chopper Motor Speed Alarm",
-        causes: "Loose or broken chopper drive belt, motor bearing seizure, dirty IR source optics, or pre-amp board issue.",
-        steps: [
-          { title: "Inspect Chopper Wheel Mechanism", detail: "Turn off power, remove top cover, and verify belt tension and free rotation of chopper wheel.", verify: "Wheel turns smoothly without rubbing the optical housing." },
-          { title: "Check Motor Speed in Diagnostics", detail: "Power on instrument and navigate to Diagnostics > Chopper Motor Speed.", verify: "Speed reading remains steady at 1800 RPM (or 60 Hz sync)." },
-          { title: "Verify AGC Intensity Counts", detail: "Check AGC intensity counts on diagnostic screen.", verify: "Intensity must read between 150,000 and 300,000 counts." }
-        ]
-      },
-      {
-        problem: "Bias Voltage Alarm",
-        causes: "Measurement interface board failure, high-voltage leakage on detector cable, or bolometer detector breakdown.",
-        steps: [
-          { title: "Measure Test Point Bias Voltage", detail: "Using a calibrated DMM, measure detector bias voltage at test points on measurement interface board.", verify: "Voltage must read -120 VDC ± 5 VDC." },
-          { title: "Inspect BNC Coaxial Leads", detail: "Inspect and reseat high-voltage BNC lead from detector to pre-amplifier board.", verify: "Bias Voltage alarm in Alarms menu clears to OK." }
-        ]
-      }
-    ],
-    "49i": [
-      {
-        problem: "Lamp Temperature / Intensity A or B Alarm",
-        causes: "Aging UV mercury lamp bulb, failing photometer power supply board, or dirty quartz cell windows.",
-        steps: [
-          { title: "Check Lamp Operating Temperature", detail: "Go to Diagnostics > Temperatures and observe UV Lamp Temp during warm-up.", verify: "Temperature must reach and stabilize at 55.0°C." },
-          { title: "Verify Cell Frequencies", detail: "Examine Diagnostics > Detector Frequencies for Cell A and Cell B.", verify: "Frequencies must measure between 50,000 Hz and 150,000 Hz." },
-          { title: "Clean Absorption Cell Windows", detail: "Remove quartz cell windows carefully and clean with lens paper moistened with reagent-grade methanol.", verify: "Frequencies recover above 80,000 Hz." }
-        ]
-      },
-      {
-        problem: "Flow A / Flow B Alarm (Imbalance)",
-        causes: "Sticky or failed switching solenoid valve, cracked internal Teflon line, or plugged reference capillary.",
-        steps: [
-          { title: "Cycle Switching Solenoids", detail: "Navigate to Diagnostics > Test > Solenoids and cycle the switching valves repeatedly.", verify: "Audible, crisp click heard on every actuation cycle." },
-          { title: "Measure Flow with External Standard", detail: "Connect an external volumetric flow meter to exhaust outlets.", verify: "Both cell flows measure ~1.0 LPM ± 10% balanced." }
-        ]
-      },
-      {
-        problem: "Scrubber Efficiency Failure / High Zero Drift",
-        causes: "Exhausted manganese dioxide (MnO₂) ozone scrubber cartridge or calibration zero air breakthrough.",
-        steps: [
-          { title: "Perform High Ozone Challenge", detail: "Inject 400 ppb O₃ from calibrator and switch analyzer to Zero Mode.", verify: "Reading drops to <1.0 ppb within 3 minutes." },
-          { title: "Replace MnO₂ Scrubber Cartridge", detail: "Remove exhausted cartridge and replace with fresh factory-packed MnO₂ tube.", verify: "Zero air background stabilizes between -1.0 ppb and +1.0 ppb." }
-        ]
-      }
-    ],
-    "55i": [
-      {
-        problem: "Flame Out Alarm (FID Flame Will Not Light)",
-        causes: "Low fuel supply pressure (H₂ or Air), contaminated FID jet tip, burned-out glow plug igniter element.",
-        steps: [
-          { title: "Verify Support Gas Pressures", detail: "Check cylinder regulators and digital pressure displays: H₂ (30–35 psig) and Air (40–50 psig).", verify: "Pressures remain constant and do not dip during pump actuation." },
-          { title: "Test Glow Plug Ignition", detail: "Initiate auto-ignition while watching the observation window on FID housing.", verify: "Glow plug coil glows bright cherry-red during ignition sequence." },
-          { title: "Clean FID Jet Orifice", detail: "Shut off fuel gases, unbolt collector assembly, and run fine cleaning wire through jet orifice.", verify: "Flame status switches to 'LIT' and FID temperature climbs above 180°C." }
-        ]
-      },
-      {
-        problem: "Column Oven Temperature Alarm",
-        causes: "Open-circuit heating element, defective RTD sensor, unlatched door, or SSR failure.",
-        steps: [
-          { title: "Inspect Oven Door Latch", detail: "Check that the insulated column door is seated flush and mechanical latch is closed tight.", verify: "No hot air drafts escaping perimeter gasket." },
-          { title: "Measure Heater Resistance", detail: "Disconnect AC heater lead on interface board and measure resistance with DMM.", verify: "Multimeter reads 40–80 ohms (not open-circuit)." }
-        ]
-      },
-      {
-        problem: "Chromatogram Baseline Shift / Missing NMHC Peak",
-        causes: "Carrier gas hydrocarbon contamination, saturated columns, or worn 8-port rotary valve rotor.",
-        steps: [
-          { title: "Replace Carrier Gas Purifiers", detail: "Install fresh inline moisture and hydrocarbon scrubber traps on carrier line.", verify: "Baseline noise drops below 0.05 mV." },
-          { title: "Execute Column Bake-Out", detail: "Set column oven temperature to elevated conditioning setpoint for 6–8 hours with continuous carrier flow.", verify: "Inject calibration gas and confirm distinct methane and non-methane peaks." }
-        ]
-      }
-    ],
-    "42i": [
-      {
-        problem: "Converter Efficiency Failure / Converter Temp Alarm",
-        causes: "Oxidized Molybdenum converter cartridge, failing heater coil, or open thermocouple.",
-        steps: [
-          { title: "Verify Converter Operating Temperature", detail: "Navigate to Diagnostics > Temperatures and inspect NO₂ Converter Temp.", verify: "Temperature reading stabilizes at 325.0°C ± 2.0°C." },
-          { title: "Conduct Gas Phase Titration (GPT) Test", detail: "Generate NO span standard and titrate with O₃ at 80% span.", verify: "Calculated converter efficiency must measure >96.0%." },
-          { title: "Replace Moly Cartridge", detail: "Allow oven to cool to ambient and install new Molybdenum converter element.", verify: "Re-run GPT test; efficiency must measure >98%." }
-        ]
-      },
-      {
-        problem: "Cooler Temp Alarm / High PMT Noise",
-        causes: "Failed thermoelectric Peltier cooler module, clogged heat sink fins, or failed cooler fan.",
-        steps: [
-          { title: "Inspect Cooler Exhaust Fan", detail: "Verify the fan mounted on PMT heat sink is spinning at high speed.", verify: "Blow out all dust accumulation from cooling fins using dry compressed air." },
-          { title: "Check Cooler Diagnostic Temperature", detail: "Monitor cooler temp on diagnostic display during operation.", verify: "Cooler temperature stabilizes between -1.0°C and -3.0°C." }
-        ]
-      },
-      {
-        problem: "Ozonator Flow Alarm / Weak Signal",
-        causes: "Plugged ozone restriction capillary, wet air supply (saturated Drierite), or dirty reaction chamber window.",
-        steps: [
-          { title: "Inspect Air Desiccant Column", detail: "Examine external air dryer; Drierite blue silica gel must not be pink.", verify: "Replace desiccant if >50% saturated/pink." },
-          { title: "Clean Reaction Cell Optical Window", detail: "Disassemble reaction cell and clean optical window using pure reagent-grade methanol.", verify: "PMT response to span gas increases significantly." }
-        ]
-      }
-    ],
-    "43i": [
-      {
-        problem: "Flash Intensity / Lamp Voltage Alarm",
-        causes: "Pulsed UV flash lamp aging, failing trigger board, or dirty excitation optics.",
-        steps: [
-          { title: "Check Flash Lamp Diagnostics", detail: "Go to Diagnostics > Flash Lamp and record Flash Voltage and Intensity counts.", verify: "Intensity must remain above 50% with steady 10 Hz flash rate." },
-          { title: "Clean Optical Condenser Lenses", detail: "Remove optical bench cover and gently clean excitation lenses using optical swab and methanol.", verify: "Intensity counts increase by at least 15–20%." },
-          { title: "Replace Pulsed Xenon Flash Lamp", detail: "Disconnect lamp harness, unthread mounting screws, and install new xenon flash bulb.", verify: "Lamp Voltage stabilizes within 500–800 VDC and alarm clears." }
-        ]
-      },
-      {
-        problem: "Hydrocarbon Kicker Degradation / High Zero Drift",
-        causes: "Torn permeation membrane tube, plugged purge return capillary, aromatic HC contamination.",
-        steps: [
-          { title: "Verify Purge Shell Vacuum Draw", detail: "Connect vacuum gauge to kicker shell purge port.", verify: "Vacuum pulls at least -15 to -20 inHg." },
-          { title: "Conduct Hydrocarbon Challenge", detail: "Introduce 10 ppm m-xylene or aromatic gas into sample inlet.", verify: "SO₂ reading change remains below 0.5 ppb; otherwise replace kicker assembly." }
-        ]
-      }
-    ],
-    "450i": [
-      {
-        problem: "Converter Temp Alarm / Low H₂S Conversion Efficiency",
-        causes: "Open converter heater coil, broken thermocouple lead wire, or temperature controller relay failure.",
-        steps: [
-          { title: "Verify Converter Operating Temperature", detail: "Go to Diagnostics > Temperatures and review the H₂S Converter Temp display.", verify: "Controller must hold steady at nominal setpoint (~315°C or configured setpoint)." },
-          { title: "Measure Heating Element Continuity", detail: "Power down unit, disconnect furnace heater harness, and measure resistance with a DMM.", verify: "Resistance should measure between 30 and 60 ohms; open circuit indicates blown heating coil." },
-          { title: "Run H₂S Conversion Test", detail: "Inject certified H₂S span gas and compare total sulfur reading against converted reading.", verify: "Efficiency calculation must yield ≥95%." }
-        ]
-      },
-      {
-        problem: "Flash Intensity / Lamp Voltage Alarm",
-        causes: "Depleted pulsed UV xenon flash bulb, failing trigger board, or contaminated optical bandpass filters.",
-        steps: [
-          { title: "Inspect Lamp Diagnostics", detail: "Access Diagnostics > Flash Lamp and observe flash voltage and pulse rate stability.", verify: "Flash voltage remains stable in the 500–800 VDC range." },
-          { title: "Clean Optical Chamber Lenses", detail: "Remove optical chamber cover and swab condenser lenses using lens paper and pure methanol.", verify: "Optical intensity counts increase by at least 15%." },
-          { title: "Replace Flash Bulb Assembly", detail: "Unscrew bulb housing, disconnect trigger wire, and insert factory replacement xenon bulb.", verify: "Intensity reading returns above 50% threshold and alarm clears." }
-        ]
-      },
-      {
-        problem: "Sample Flow / Switching Solenoid Alarm",
-        causes: "Sticky SO₂/H₂S converter switching valve, plugged flow restriction capillary, pump diaphragm tear.",
-        steps: [
-          { title: "Test Valve Actuation in Diagnostics", detail: "Navigate to Diagnostics > Test > Valves and manually trigger the SO₂/H₂S mode valve.", verify: "Observe pressure and confirm a sharp metallic mechanical switching click." },
-          { title: "Clean Critical Flow Capillary", detail: "Remove flow capillary, submerge in ultrasonic bath with isopropyl alcohol for 10 minutes, and blow dry.", verify: "Reinstall and verify sample flow measures exactly 0.50 LPM ± 0.05 LPM." }
-        ]
-      },
-      {
-        problem: "Hydrocarbon Kicker Degradation / Unstable Zero Baseline",
-        causes: "Fouled permeation membrane tubes, saturated kicker purge capillary, or aromatic hydrocarbon breakthrough.",
-        steps: [
-          { title: "Measure Purge Shell Vacuum", detail: "Attach calibrated vacuum gauge to kicker purge exhaust line.", verify: "Vacuum must pull at least -15 inHg." },
-          { title: "Perform Hydrocarbon Breakthrough Challenge", detail: "Introduce sample air spiked with xylene or toluene into the inlet.", verify: "SO₂ baseline must shift by less than 0.5 ppb; replace kicker if significant response occurs." }
-        ]
-      }
-    ],
-    "17i": [
-      {
-        problem: "External Converter Temp Alarm",
-        causes: "Furnace heater coil burnout, broken thermocouple, or loose umbilical interconnect cable.",
-        steps: [
-          { title: "Inspect Umbilical Cable Harness", detail: "Verify circular connector between 17i rear panel and converter oven is locked securely.", verify: "Inspect pins for corrosion, bent contacts, or loose shells." },
-          { title: "Verify Furnace Temperature", detail: "Inspect controller display on external converter housing.", verify: "Furnace reaches and stabilizes at ~825.0°C." }
-        ]
-      },
-      {
-        problem: "Unstable Ammonia Differential Reading (Nt minus NOx)",
-        causes: "Unheated sample line causing NH₃ adsorption, sticky mode switching valve, or degraded converter.",
-        steps: [
-          { title: "Inspect Sample Line Temperature", detail: "Measure temperature along heated sample line from probe to analyzer inlet.", verify: "Line temperature maintains minimum 110°C–120°C." },
-          { title: "Perform NH₃ Span Challenge", detail: "Inject certified NH₃ span gas through sample train.", verify: "Stable reading achieved within 15 minutes without drift." }
-        ]
-      }
-    ],
-    "5014i": [
-      {
-        problem: "Filter Tape Out / Tape Jam / Counter Alarm",
-        causes: "Empty tape spool, ripped filter tape, loose pinch rollers, or dust on optical edge sensors.",
-        steps: [
-          { title: "Inspect Tape Track and Roll", detail: "Open optical door and inspect glass fiber roll diameter and path alignment.", verify: "Thread new roll through rollers if depleted or torn." },
-          { title: "Clean Optical Edge Sensors", detail: "Wipe reflective optical tape sensors with an alcohol wipe.", verify: "Check Diagnostics > Tape Sensor toggles properly." },
-          { title: "Execute Manual Tape Advance", detail: "Go to Instrument Controls > Tape Advance and press Enter.", verify: "Head unclamps, tape advances exactly 1 spot, and head seals tight." }
-        ]
-      },
-      {
-        problem: "Flow Rate Alarm (Deviating from 16.67 LPM)",
-        causes: "Worn pump vanes, inlet seal leak, or Mass Flow Controller calibration drift.",
-        steps: [
-          { title: "Perform Leak Check with Stopper", detail: "Install rubber leak check adapter on sampling inlet head.", verify: "Flow drops below 0.50 LPM within 30 seconds." },
-          { title: "Multi-Point Flow Calibration", detail: "Connect certified transfer standard (e.g., DeltaCal) to inlet and enter Calibration > Flow menu.", verify: "Adjust calibration factors until flow matches 16.67 LPM ± 1%." }
-        ]
-      }
-    ],
-    "5028i": [
-      {
-        problem: "Channel A or B Filter Tape Failure",
-        causes: "Tape runout on respective spool, clamp alignment failure, or sticky dual-head motor.",
-        steps: [
-          { title: "Identify Faulting Channel", detail: "Check alarm screen to identify if Channel A (PM10) or Channel B (PM2.5) triggered error.", verify: "Inspect specific tape spool and tension rollers for slack." },
-          { title: "Exercise Head Clamping Motor", detail: "Cycle mechanical clamp in service diagnostics for the affected channel.", verify: "Head clamps and holds vacuum without mechanical binding or gear slip." }
-        ]
-      }
-    ],
-    "111": [
-      {
-        problem: "Elevated Hydrocarbon / CO / Moisture Output",
-        causes: "Exhausted Purafil canisters, saturated activated charcoal, or failed moisture auto-drain valve.",
-        steps: [
-          { title: "Service Automatic Moisture Drain", detail: "Unscrew condensate bowl beneath receiver tank, clean float valve, and blow clear.", verify: "Condensate valve automatically opens and closes during pressurization." },
-          { title: "Replace Chemical Media Canisters", detail: "Unthread canisters; replace purple Purafil (replace when brown) and activated charcoal.", verify: "Background hydrocarbon reading returns to <0.05 ppm." }
-        ]
-      },
-      {
-        problem: "Low Delivery Pressure / Continuous Running",
-        causes: "Cracked compressor reed valves, clogged inlet air felt filter, or leaking relief valve.",
-        steps: [
-          { title: "Replace Intake Felt Filter", detail: "Remove intake breather cap, inspect felt element for dust, and replace.", verify: "Air intake suction noticeably increases." },
-          { title: "Disassemble Compressor Valve Head", detail: "Unbolt compressor cylinder head, inspect stainless reed valve flappers for cracks.", verify: "Replace damaged valve reeds and verify pressure builds to 60+ psig." }
-        ]
-      }
-    ],
-    "1150": [
-      {
-        problem: "Catalyst Temperature Fails to Rise",
-        causes: "Blown main fuse, failed solid-state relay (SSR), or open-circuit thermocouple sensor.",
-        steps: [
-          { title: "Inspect Rear AC Power Entry Module", detail: "Disconnect main power cable, extract fuse drawer, and check continuity of both fuses with DMM.", verify: "Both fuses show <1 ohm continuity." },
-          { title: "Measure Solid State Relay Control Voltage", detail: "Check DC control input terminals across SSR while controller calls for heat.", verify: "Multimeter registers 3–32 VDC control signal." },
-          { title: "Measure Heater Element Resistance", detail: "Measure across furnace heater leads.", verify: "Element shows continuous resistance (approx. 20–50 ohms)." }
-        ]
-      },
-      {
-        problem: "High CO Reading in Purified Air Output",
-        causes: "Low reactor temperature (<350°C), contaminated air supply with oil carryover poisoning catalyst bed.",
-        steps: [
-          { title: "Verify Operating Temperature", detail: "Check front digital temperature indicator.", verify: "Indicator reaches and maintains nominal 350°C." },
-          { title: "Perform 50 psig Pressure Leak Test", detail: "Pressurize catalyst housing to 50 psig and soap test all tube fittings.", verify: "Zero bubble generation at any fitting or weld joint." }
-        ]
-      }
-    ]
+    "48i": [], "49i": [], "55i": [], "42i": [], "43i": [],
+    "450i": [], "17i": [], "5014i": [], "5028i": [], "111": [], "1150": []
   };
 
   const ADMIN_PIN = "1986";
@@ -451,14 +278,40 @@
   let activeDb = defaultDatabase;
 
   const modelSelector = document.getElementById('modelSelector');
-  const editModelSelect = document.getElementById('editModel');
+  const editModelInput = document.getElementById('editModelInput');
+  const modelDatalist = document.getElementById('modelDatalist');
   const problemsContainer = document.getElementById('problemsContainer');
   const adminLoginBtn = document.getElementById('adminLoginBtn');
   const adminBadge = document.getElementById('adminBadge');
+  const addModelBtn = document.getElementById('addModelBtn');
   const addIssueBtn = document.getElementById('addIssueBtn');
   const syncIndicator = document.getElementById('syncIndicator');
 
-  // REAL-TIME LISTENER & INITIAL SEEDING
+  // Render dropdown exactly matching Image 1
+  function renderModelDropdown(selectedKey) {
+    const prevSelected = selectedKey || modelSelector.value;
+    modelSelector.innerHTML = '<option value="">-- Select Model --</option>';
+    modelDatalist.innerHTML = '';
+
+    const keys = Object.keys(activeDb);
+
+    keys.forEach(key => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = modelDisplayNames[key] || key;
+      modelSelector.appendChild(opt);
+
+      const dOpt = document.createElement('option');
+      dOpt.value = key;
+      modelDatalist.appendChild(dOpt);
+    });
+
+    if (prevSelected && keys.includes(prevSelected)) {
+      modelSelector.value = prevSelected;
+    }
+  }
+
+  // Real-time listener
   if (isFirebaseAvailable) {
     dbRef.on('value', (snapshot) => {
       const data = snapshot.val();
@@ -466,20 +319,23 @@
         activeDb = data;
         syncIndicator.innerHTML = '🟢 Cloud Connected';
       } else {
-        // Unang initialization: isulat ang buong database sa cloud
         dbRef.set(defaultDatabase);
         syncIndicator.innerHTML = '🟢 Database Initialized';
       }
+      renderModelDropdown();
       renderProblems();
     }, (error) => {
       syncIndicator.innerHTML = '⚠️ Firebase Error: ' + error.message;
       syncIndicator.style.color = '#ef4444';
+      renderModelDropdown();
       renderProblems();
     });
   } else {
+    renderModelDropdown();
     renderProblems();
   }
 
+  // Render problems with individual paired Cause -> Actions
   function renderProblems() {
     const selectedModel = modelSelector.value;
     problemsContainer.innerHTML = '';
@@ -490,7 +346,7 @@
     }
 
     const items = activeDb[selectedModel];
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
       problemsContainer.innerHTML = `<div class="placeholder-msg">No entries recorded for this model yet. Use Admin Mode to create entries.</div>`;
       return;
     }
@@ -499,18 +355,64 @@
       const problemDiv = document.createElement('div');
       problemDiv.className = 'problem-item';
 
-      let stepsHtml = '';
-      if (item.steps && Array.isArray(item.steps)) {
-        stepsHtml = item.steps.map((st, i) => `
+      let pairsHtml = '';
+
+      // Check if item uses new 'pairs' array
+      if (item.pairs && Array.isArray(item.pairs)) {
+        pairsHtml = item.pairs.map((pair, pIdx) => {
+          const stepsHtml = (pair.steps || []).map((st, sIdx) => `
+            <div class="step-card">
+              <div class="step-head">
+                <span class="step-badge">${sIdx + 1}</span>
+                <span>${st.title}</span>
+              </div>
+              <div class="step-detail">${st.detail}</div>
+              <div class="step-verify"><strong>Verification: </strong>${st.verify}</div>
+            </div>
+          `).join('');
+
+          return `
+            <div class="diagnostic-pair-card">
+              <div class="cause-row">
+                <span class="cause-label">Probable Cause #${pIdx + 1}:</span>
+                <div class="cause-text">${pair.cause}</div>
+              </div>
+              <div class="action-row">
+                <span class="action-label">Corrective Action / Solution:</span>
+                <div class="steps-container">
+                  ${stepsHtml || '<div class="step-detail">No action specified.</div>'}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        // Backwards compatibility with legacy entries (single causes box + steps)
+        const legacySteps = (item.steps || []).map((st, sIdx) => `
           <div class="step-card">
             <div class="step-head">
-              <span class="step-badge">${i + 1}</span>
+              <span class="step-badge">${sIdx + 1}</span>
               <span>${st.title}</span>
             </div>
             <div class="step-detail">${st.detail}</div>
             <div class="step-verify"><strong>Verification: </strong>${st.verify}</div>
           </div>
         `).join('');
+
+        pairsHtml = `
+          <div class="diagnostic-pair-card">
+            <div class="cause-row">
+              <span class="cause-label">Probable Causes:</span>
+              <div class="cause-text">${item.causes || 'None specified'}</div>
+            </div>
+            <div class="action-row">
+              <span class="action-label">Corrective Actions:</span>
+              <div class="steps-container">
+                ${legacySteps}
+              </div>
+            </div>
+          </div>
+        `;
       }
 
       let adminActionsHtml = '';
@@ -529,13 +431,7 @@
           <span class="icon-toggle">▼</span>
         </button>
         <div class="solution-body">
-          <div class="section-title">Probable Causes:</div>
-          <div class="causes-box">${item.causes}</div>
-          
-          <div class="section-title">Step-by-Step Corrective Actions:</div>
-          <div class="steps-container">
-            ${stepsHtml}
-          </div>
+          ${pairsHtml}
           ${adminActionsHtml}
         </div>
       `;
@@ -557,6 +453,7 @@
       if (pin === ADMIN_PIN) {
         isAdmin = true;
         adminBadge.classList.remove('hidden');
+        addModelBtn.classList.remove('hidden');
         addIssueBtn.classList.remove('hidden');
         adminLoginBtn.textContent = "Logout";
         adminLoginBtn.className = "btn btn-danger";
@@ -567,6 +464,7 @@
     } else {
       isAdmin = false;
       adminBadge.classList.add('hidden');
+      addModelBtn.classList.add('hidden');
       addIssueBtn.classList.add('hidden');
       adminLoginBtn.textContent = "Admin Login";
       adminLoginBtn.className = "btn btn-primary";
@@ -574,20 +472,88 @@
     }
   }
 
+  function promptAddNewModel() {
+    const newName = prompt("Enter the name of the new analyzer model (e.g. Model 146i or 43i):");
+    if (!newName || !newName.trim()) return;
+
+    const trimmed = newName.trim();
+    if (!activeDb[trimmed]) {
+      activeDb[trimmed] = [
+        {
+          problem: "Initial Baseline Check",
+          pairs: [
+            {
+              cause: "Initial configuration check for new model",
+              steps: [
+                { title: "Power and Diagnostic Verification", detail: "Verify supply voltages, communication links, and baseline sensor outputs.", verify: "Diagnostics report normal status." }
+              ]
+            }
+          ]
+        }
+      ];
+
+      if (isFirebaseAvailable) {
+        dbRef.set(activeDb).then(() => {
+          renderModelDropdown(trimmed);
+          modelSelector.value = trimmed;
+          renderProblems();
+        }).catch(err => alert("Error saving to cloud: " + err.message));
+      } else {
+        renderModelDropdown(trimmed);
+        modelSelector.value = trimmed;
+        renderProblems();
+      }
+    } else {
+      modelSelector.value = trimmed;
+      renderProblems();
+    }
+  }
+
+  // MODAL LOGIC WITH DYNAMIC CAUSE & ACTION BLOCKS
   const adminModal = document.getElementById('adminModal');
   const editIndexInput = document.getElementById('editIndex');
   const editProblemInput = document.getElementById('editProblem');
-  const editCausesInput = document.getElementById('editCauses');
-  const editStepsText = document.getElementById('editStepsText');
+  const pairsContainer = document.getElementById('pairsContainer');
   const modalTitle = document.getElementById('modalTitle');
+
+  function addCauseActionBlock(causeValue = "", stepsValue = "") {
+    const blockIndex = pairsContainer.children.length + 1;
+    const blockDiv = document.createElement('div');
+    blockDiv.className = 'modal-pair-block';
+
+    blockDiv.innerHTML = `
+      <div class="modal-pair-header">
+        <span class="modal-pair-badge">Cause & Action Set #${blockIndex}</span>
+        <button type="button" class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="removeCauseActionBlock(this)">Remove</button>
+      </div>
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label>Probable Cause:</label>
+        <input type="text" class="pair-cause-input" placeholder="e.g. Instrument overheating or fan failure" value="${causeValue.replace(/"/g, '&quot;')}" />
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Action / Solution Steps (Format: Title | Detail | Verification):</label>
+        <textarea rows="4" class="pair-steps-input" placeholder="Inspect Exhaust Fan | Check rear fan operation | Fan spins quietly without stalling">${stepsValue}</textarea>
+      </div>
+    `;
+
+    pairsContainer.appendChild(blockDiv);
+  }
+
+  function removeCauseActionBlock(btn) {
+    const block = btn.closest('.modal-pair-block');
+    block.remove();
+    // Refresh numbering badges
+    const badges = pairsContainer.querySelectorAll('.modal-pair-badge');
+    badges.forEach((b, i) => b.textContent = `Cause & Action Set #${i + 1}`);
+  }
 
   function openAddIssueModal() {
     modalTitle.textContent = "Add Troubleshooting Entry";
     editIndexInput.value = "-1";
-    editModelSelect.value = modelSelector.value || "48i";
+    editModelInput.value = modelSelector.value || "";
     editProblemInput.value = "";
-    editCausesInput.value = "";
-    editStepsText.value = "";
+    pairsContainer.innerHTML = "";
+    addCauseActionBlock(); // Add first empty pair
     adminModal.classList.remove('hidden');
   }
 
@@ -595,15 +561,25 @@
     const item = activeDb[model][index];
     modalTitle.textContent = "Edit Troubleshooting Entry";
     editIndexInput.value = index;
-    editModelSelect.value = model;
+    editModelInput.value = model;
     editProblemInput.value = item.problem;
-    editCausesInput.value = item.causes;
-    
-    if (item.steps) {
-      editStepsText.value = item.steps.map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
+    pairsContainer.innerHTML = "";
+
+    if (item.pairs && Array.isArray(item.pairs)) {
+      item.pairs.forEach(p => {
+        const stepsText = (p.steps || []).map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
+        addCauseActionBlock(p.cause, stepsText);
+      });
     } else {
-      editStepsText.value = "";
+      // Legacy format migration
+      const legacyStepsText = (item.steps || []).map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
+      addCauseActionBlock(item.causes || "", legacyStepsText);
     }
+
+    if (pairsContainer.children.length === 0) {
+      addCauseActionBlock();
+    }
+
     adminModal.classList.remove('hidden');
   }
 
@@ -612,41 +588,65 @@
   }
 
   function saveIssue() {
-    const model = editModelSelect.value;
+    const model = editModelInput.value.trim();
     const index = parseInt(editIndexInput.value, 10);
     const problem = editProblemInput.value.trim();
-    const causes = editCausesInput.value.trim();
-    const rawSteps = editStepsText.value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
-    if (!problem || !causes || rawSteps.length === 0) {
-      alert("All fields are required. Follow the format: Title | Detail | Verification.");
+    if (!model || !problem) {
+      alert("Please specify both a Model and an Alarm/Problem Title.");
       return;
     }
 
-    const parsedSteps = rawSteps.map(line => {
-      const parts = line.split('|').map(p => p.trim());
-      return {
-        title: parts[0] || "Step Action",
-        detail: parts[1] || parts[0] || "Execute corrective procedure.",
-        verify: parts[2] || "Confirm normal reading in diagnostics."
-      };
-    });
+    const pairBlocks = pairsContainer.querySelectorAll('.modal-pair-block');
+    if (pairBlocks.length === 0) {
+      alert("Please add at least one Cause & Action pair.");
+      return;
+    }
 
-    if (!activeDb[model]) activeDb[model] = [];
+    const pairs = [];
+    for (let i = 0; i < pairBlocks.length; i++) {
+      const cause = pairBlocks[i].querySelector('.pair-cause-input').value.trim();
+      const rawSteps = pairBlocks[i].querySelector('.pair-steps-input').value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+      if (!cause || rawSteps.length === 0) {
+        alert(`Cause and Solution steps in Set #${i + 1} cannot be empty. Follow the format: Title | Detail | Verification.`);
+        return;
+      }
+
+      const steps = rawSteps.map(line => {
+        const parts = line.split('|').map(p => p.trim());
+        return {
+          title: parts[0] || "Corrective Step",
+          detail: parts[1] || parts[0] || "Execute procedure.",
+          verify: parts[2] || "Confirm normal status in diagnostics."
+        };
+      });
+
+      pairs.push({ cause, steps });
+    }
+
+    const newEntry = { problem, pairs };
+
+    if (!activeDb[model]) {
+      activeDb[model] = [];
+    }
 
     if (index === -1) {
-      activeDb[model].push({ problem, causes, steps: parsedSteps });
+      activeDb[model].push(newEntry);
     } else {
-      activeDb[model][index] = { problem, causes, steps: parsedSteps };
+      activeDb[model][index] = newEntry;
     }
 
     if (isFirebaseAvailable) {
       dbRef.set(activeDb).then(() => {
         closeAdminModal();
+        renderModelDropdown(model);
         modelSelector.value = model;
+        renderProblems();
       }).catch(err => alert("Error saving to cloud: " + err.message));
     } else {
       closeAdminModal();
+      renderModelDropdown(model);
       modelSelector.value = model;
       renderProblems();
     }
@@ -655,9 +655,18 @@
   function deleteIssue(model, index) {
     if (confirm("Are you sure you want to permanently delete this troubleshooting entry from the cloud database?")) {
       activeDb[model].splice(index, 1);
+      
+      if (activeDb[model].length === 0) {
+        delete activeDb[model];
+      }
+
       if (isFirebaseAvailable) {
-        dbRef.set(activeDb);
+        dbRef.set(activeDb).then(() => {
+          renderModelDropdown();
+          renderProblems();
+        });
       } else {
+        renderModelDropdown();
         renderProblems();
       }
     }
