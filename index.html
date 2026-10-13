@@ -220,12 +220,32 @@
       <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="addCauseActionBlock()">+ Add Cause & Action Pair</button>
     </div>
 
-    <!-- Container for dynamic paired blocks -->
     <div id="pairsContainer"></div>
 
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeAdminModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveIssue()">Save to Cloud</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden Password Admin Login Modal -->
+<div id="loginModal" class="modal-overlay hidden">
+  <div class="modal-content" style="max-width: 380px;">
+    <h2>Admin Login</h2>
+    <div class="form-group">
+      <label for="adminPinInput">Enter Admin PIN:</label>
+      <input 
+        type="password" 
+        id="adminPinInput" 
+        placeholder="••••" 
+        autocomplete="off" 
+        style="font-size: 1.2rem; letter-spacing: 0.2em; text-align: center;"
+      />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAdminLogin()">Login</button>
     </div>
   </div>
 </div>
@@ -253,7 +273,6 @@
     document.getElementById('syncIndicator').style.color = '#f59e0b';
   }
 
-  // Model Display Names matching Image 1
   const modelDisplayNames = {
     "48i": "Model 48i (CO Infrared Gas Filter Correlation Analyzer)",
     "49i": "Model 49i (UV Photometric O₃ Analyzer)",
@@ -287,7 +306,9 @@
   const addIssueBtn = document.getElementById('addIssueBtn');
   const syncIndicator = document.getElementById('syncIndicator');
 
-  // Render dropdown exactly matching Image 1
+  const loginModal = document.getElementById('loginModal');
+  const adminPinInput = document.getElementById('adminPinInput');
+
   function renderModelDropdown(selectedKey) {
     const prevSelected = selectedKey || modelSelector.value;
     modelSelector.innerHTML = '<option value="">-- Select Model --</option>';
@@ -311,7 +332,6 @@
     }
   }
 
-  // Real-time listener
   if (isFirebaseAvailable) {
     dbRef.on('value', (snapshot) => {
       const data = snapshot.val();
@@ -335,7 +355,6 @@
     renderProblems();
   }
 
-  // Render problems with individual paired Cause -> Actions
   function renderProblems() {
     const selectedModel = modelSelector.value;
     problemsContainer.innerHTML = '';
@@ -357,7 +376,6 @@
 
       let pairsHtml = '';
 
-      // Check if item uses new 'pairs' array
       if (item.pairs && Array.isArray(item.pairs)) {
         pairsHtml = item.pairs.map((pair, pIdx) => {
           const stepsHtml = (pair.steps || []).map((st, sIdx) => `
@@ -387,7 +405,6 @@
           `;
         }).join('');
       } else {
-        // Backwards compatibility with legacy entries (single causes box + steps)
         const legacySteps = (item.steps || []).map((st, sIdx) => `
           <div class="step-card">
             <div class="step-head">
@@ -447,20 +464,12 @@
     parentItem.classList.toggle('active');
   }
 
+  /* Admin Authentication Logic na Naka-mask ang Password */
   function handleAdminToggle() {
     if (!isAdmin) {
-      const pin = prompt("Enter Admin PIN:");
-      if (pin === ADMIN_PIN) {
-        isAdmin = true;
-        adminBadge.classList.remove('hidden');
-        addModelBtn.classList.remove('hidden');
-        addIssueBtn.classList.remove('hidden');
-        adminLoginBtn.textContent = "Logout";
-        adminLoginBtn.className = "btn btn-danger";
-        renderProblems();
-      } else if (pin !== null) {
-        alert("Invalid PIN. Access denied.");
-      }
+      adminPinInput.value = "";
+      loginModal.classList.remove('hidden');
+      setTimeout(() => adminPinInput.focus(), 50);
     } else {
       isAdmin = false;
       adminBadge.classList.add('hidden');
@@ -472,13 +481,46 @@
     }
   }
 
+  function closeLoginModal() {
+    loginModal.classList.add('hidden');
+    adminPinInput.value = "";
+  }
+
+  function submitAdminLogin() {
+    const pin = adminPinInput.value.trim();
+    if (pin === ADMIN_PIN) {
+      isAdmin = true;
+      adminBadge.classList.remove('hidden');
+      addModelBtn.classList.remove('hidden');
+      addIssueBtn.classList.remove('hidden');
+      adminLoginBtn.textContent = "Logout";
+      adminLoginBtn.className = "btn btn-danger";
+      closeLoginModal();
+      renderProblems();
+    } else {
+      alert("Invalid PIN. Access denied.");
+      adminPinInput.value = "";
+      adminPinInput.focus();
+    }
+  }
+
+  adminPinInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      submitAdminLogin();
+    }
+  });
+
   function promptAddNewModel() {
-    const newName = prompt("Enter the name of the new analyzer model (e.g. Model 146i or 43i):");
+    const newName = prompt("Enter the name of the new analyzer model (e.g. Model 146i or EnviDAS / EnviDAS Ultimate):");
     if (!newName || !newName.trim()) return;
 
-    const trimmed = newName.trim();
-    if (!activeDb[trimmed]) {
-      activeDb[trimmed] = [
+    const fullTitle = newName.trim();
+    // Papalitan ang bawal na characters ng dash (-) para ligtas sa Firebase Key
+    const safeKey = fullTitle.replace(/[\/\.#$\[\]]/g, '-');
+    modelDisplayNames[safeKey] = fullTitle;
+
+    if (!activeDb[safeKey]) {
+      activeDb[safeKey] = [
         {
           problem: "Initial Baseline Check",
           pairs: [
@@ -494,22 +536,21 @@
 
       if (isFirebaseAvailable) {
         dbRef.set(activeDb).then(() => {
-          renderModelDropdown(trimmed);
-          modelSelector.value = trimmed;
+          renderModelDropdown(safeKey);
+          modelSelector.value = safeKey;
           renderProblems();
         }).catch(err => alert("Error saving to cloud: " + err.message));
       } else {
-        renderModelDropdown(trimmed);
-        modelSelector.value = trimmed;
+        renderModelDropdown(safeKey);
+        modelSelector.value = safeKey;
         renderProblems();
       }
     } else {
-      modelSelector.value = trimmed;
+      modelSelector.value = safeKey;
       renderProblems();
     }
   }
 
-  // MODAL LOGIC WITH DYNAMIC CAUSE & ACTION BLOCKS
   const adminModal = document.getElementById('adminModal');
   const editIndexInput = document.getElementById('editIndex');
   const editProblemInput = document.getElementById('editProblem');
@@ -542,7 +583,6 @@
   function removeCauseActionBlock(btn) {
     const block = btn.closest('.modal-pair-block');
     block.remove();
-    // Refresh numbering badges
     const badges = pairsContainer.querySelectorAll('.modal-pair-badge');
     badges.forEach((b, i) => b.textContent = `Cause & Action Set #${i + 1}`);
   }
@@ -553,7 +593,7 @@
     editModelInput.value = modelSelector.value || "";
     editProblemInput.value = "";
     pairsContainer.innerHTML = "";
-    addCauseActionBlock(); // Add first empty pair
+    addCauseActionBlock();
     adminModal.classList.remove('hidden');
   }
 
@@ -571,7 +611,6 @@
         addCauseActionBlock(p.cause, stepsText);
       });
     } else {
-      // Legacy format migration
       const legacyStepsText = (item.steps || []).map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
       addCauseActionBlock(item.causes || "", legacyStepsText);
     }
@@ -588,14 +627,17 @@
   }
 
   function saveIssue() {
-    const model = editModelInput.value.trim();
+    const rawModel = editModelInput.value.trim();
     const index = parseInt(editIndexInput.value, 10);
     const problem = editProblemInput.value.trim();
 
-    if (!model || !problem) {
+    if (!rawModel || !problem) {
       alert("Please specify both a Model and an Alarm/Problem Title.");
       return;
     }
+
+    const model = rawModel.replace(/[\/\.#$\[\]]/g, '-');
+    modelDisplayNames[model] = rawModel;
 
     const pairBlocks = pairsContainer.querySelectorAll('.modal-pair-block');
     if (pairBlocks.length === 0) {
