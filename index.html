@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AQMS & CEMS Cloud Diagnostic Hub</title>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -26,39 +26,40 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif; }
-    body { background-color: var(--bg); color: var(--text-main); padding: 24px; line-height: 1.5; }
-    .container { max-width: 1100px; margin: 0 auto; }
+    body { background-color: var(--bg); color: var(--text-main); padding: 20px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+    .container { max-width: 1100px; margin: 0 auto; width: 100%; }
     
     /* Header layout */
     header { 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      margin-bottom: 24px; 
+      margin-bottom: 20px; 
       gap: 16px; 
+      flex-wrap: wrap;
     }
-    .header-text { flex: 1; min-width: 260px; }
-    h1 { font-size: 1.85rem; color: var(--accent); margin-bottom: 4px; }
+    .header-text { flex: 1; min-width: 240px; }
+    h1 { font-size: 1.7rem; color: var(--accent); margin-bottom: 4px; line-height: 1.2; word-break: break-word; }
+    .subtitle { color: var(--text-sub); font-size: 0.9rem; }
     
     .header-controls { 
       display: flex; 
       gap: 8px; 
       align-items: center; 
-      flex-wrap: nowrap; 
-      justify-content: flex-end; 
+      flex-wrap: wrap; 
+      justify-content: flex-start; 
     }
     .sync-status { 
-      font-size: 0.82rem; 
+      font-size: 0.8rem; 
       color: var(--success-green); 
       font-weight: 600; 
       display: flex; 
       align-items: center; 
       gap: 6px; 
       white-space: nowrap; 
-      margin-right: 4px;
     }
     .admin-indicator {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 4px 8px;
       border-radius: 4px;
@@ -68,7 +69,7 @@
       white-space: nowrap;
     }
 
-    .btn { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+    .btn { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
     .btn-primary { background-color: var(--btn-bg); color: #fff; }
     .btn-primary:hover { background-color: var(--btn-hover); }
     .btn-danger { background-color: var(--alarm-red); color: #fff; }
@@ -76,20 +77,20 @@
     .btn-secondary { background-color: var(--border); color: var(--text-main); }
     .btn-secondary:hover { background-color: #334661; }
 
-    .step-box { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-    .step-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 700; margin-bottom: 10px; display: block; }
-    select, input, textarea { width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--panel-bg); color: var(--text-main); font-size: 0.95rem; outline: none; }
+    .step-box { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+    .step-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 700; margin-bottom: 8px; display: block; }
+    select, input, textarea { width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--panel-bg); color: var(--text-main); font-size: 0.95rem; outline: none; }
     select:focus, input:focus, textarea:focus { border-color: var(--border-focus); }
 
     /* Accordion Problem Card */
-    .problem-list { display: flex; flex-direction: column; gap: 12px; }
+    .problem-list { display: flex; flex-direction: column; gap: 10px; }
     .problem-item { border: 1px solid var(--border); background-color: var(--panel-bg); border-radius: 6px; overflow: hidden; transition: border-color 0.2s ease; }
     .problem-item:hover { border-color: #3b506f; }
-    .problem-header { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: none; width: 100%; border: none; color: inherit; text-align: left; }
-    .problem-title { font-size: 1rem; font-weight: 600; color: var(--alarm-title); display: flex; align-items: center; gap: 10px; }
-    .icon-toggle { color: var(--text-sub); font-size: 0.85rem; transition: transform 0.2s ease; }
+    .problem-header { padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: none; width: 100%; border: none; color: inherit; text-align: left; }
+    .problem-title { font-size: 0.95rem; font-weight: 600; color: var(--alarm-title); display: flex; align-items: center; gap: 8px; word-break: break-word; }
+    .icon-toggle { color: var(--text-sub); font-size: 0.8rem; transition: transform 0.2s ease; margin-left: 8px; }
     .problem-item.active .icon-toggle { transform: rotate(180deg); }
-    .solution-body { display: none; padding: 18px 20px; background-color: rgba(0, 0, 0, 0.45); border-top: 1px solid var(--border); }
+    .solution-body { display: none; padding: 14px; background-color: rgba(0, 0, 0, 0.45); border-top: 1px solid var(--border); }
     .problem-item.active .solution-body { display: block; }
 
     /* Paired Cause & Action Box */
@@ -97,67 +98,156 @@
       background-color: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
     }
     .diagnostic-pair-card:last-of-type { margin-bottom: 0; }
     
     .cause-row {
-      margin-bottom: 12px;
-      padding: 10px 14px;
+      margin-bottom: 10px;
+      padding: 8px 12px;
       background-color: rgba(239, 68, 68, 0.08);
-      border-left: 4px solid var(--alarm-red);
+      border-left: 3px solid var(--alarm-red);
       border-radius: 4px;
     }
-    .cause-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #f87171; margin-bottom: 4px; display: block; }
-    .cause-text { font-size: 0.95rem; color: #f1f5f9; font-weight: 500; }
+    .cause-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #f87171; margin-bottom: 2px; display: block; }
+    .cause-text { font-size: 0.9rem; color: #f1f5f9; font-weight: 500; word-break: break-word; }
 
     .action-row {
-      padding-left: 4px;
+      padding-left: 2px;
     }
-    .action-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 8px; display: block; }
+    .action-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 6px; display: block; }
     
     .steps-container { display: flex; flex-direction: column; gap: 8px; }
-    .step-card { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #1f2d42; border-radius: 6px; padding: 10px 14px; }
-    .step-head { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.92rem; color: #e2e8f0; margin-bottom: 4px; }
-    .step-badge { background-color: var(--step-badge); color: #fff; font-size: 0.7rem; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
-    .step-detail { font-size: 0.88rem; color: var(--text-sub); margin-bottom: 6px; }
-    .step-verify { font-size: 0.83rem; color: #34d399; background-color: rgba(52, 211, 153, 0.08); padding: 4px 8px; border-radius: 4px; display: inline-block; width: 100%; }
+    .step-card { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #1f2d42; border-radius: 6px; padding: 10px 12px; }
+    .step-head { display: flex; align-items: flex-start; gap: 8px; font-weight: 600; font-size: 0.9rem; color: #e2e8f0; margin-bottom: 4px; }
+    .step-badge { background-color: var(--step-badge); color: #fff; font-size: 0.68rem; min-width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .step-detail { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 6px; word-break: break-word; }
+    .step-verify { font-size: 0.8rem; color: #34d399; background-color: rgba(52, 211, 153, 0.08); padding: 4px 8px; border-radius: 4px; display: block; word-break: break-word; }
     
-    .admin-item-actions { margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; }
+    .admin-item-actions { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; }
 
     /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 999; padding: 16px; }
-    .modal-content { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; max-width: 760px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto; }
-    .modal-content h2 { font-size: 1.3rem; margin-bottom: 16px; color: var(--accent); }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 999; padding: 12px; }
+    .modal-content { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; max-width: 720px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    .modal-content h2 { font-size: 1.2rem; margin-bottom: 14px; color: var(--accent); }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
     
-    /* Dynamic Modal Builder Blocks */
     .modal-pair-block {
       background-color: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 14px;
-      margin-bottom: 14px;
-      position: relative;
+      padding: 12px;
+      margin-bottom: 12px;
     }
     .modal-pair-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .modal-pair-badge {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: var(--accent);
       text-transform: uppercase;
     }
     
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px; }
-    .placeholder-msg { color: var(--text-sub); font-style: italic; text-align: center; padding: 24px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .placeholder-msg { color: var(--text-sub); font-style: italic; text-align: center; padding: 20px 10px; font-size: 0.9rem; }
     .hidden { display: none !important; }
+
+    /* =========================================================
+       MOBILE SPECIFIC OPTIMIZATIONS (Screen width <= 768px)
+       ========================================================= */
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      
+      .header-text { text-align: center; }
+      h1 { font-size: 1.4rem; }
+      .subtitle { font-size: 0.8rem; }
+
+      .header-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .sync-status {
+        grid-column: 1 / -1;
+        justify-content: center;
+        font-size: 0.8rem;
+        margin-bottom: 2px;
+      }
+
+      .admin-indicator {
+        grid-column: 1 / -1;
+        text-align: center;
+        font-size: 0.75rem;
+        padding: 6px;
+      }
+
+      /* Buttons take convenient touch target size on phone */
+      #addModelBtn, #addIssueBtn, #adminLoginBtn {
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 0.82rem;
+      }
+
+      /* Single full-width button when not logged in */
+      #adminLoginBtn:only-child, 
+      .header-controls > #adminLoginBtn:nth-child(4) {
+        grid-column: 1 / -1;
+      }
+
+      .step-box { padding: 14px 12px; margin-bottom: 12px; border-radius: 6px; }
+      .step-label { font-size: 0.75rem; margin-bottom: 6px; }
+      select, input, textarea { padding: 10px; font-size: 0.9rem; }
+
+      .problem-header { padding: 12px; }
+      .problem-title { font-size: 0.9rem; }
+      .solution-body { padding: 12px 10px; }
+
+      .diagnostic-pair-card { padding: 10px; }
+      .cause-row { padding: 8px 10px; }
+      .cause-text { font-size: 0.85rem; }
+
+      .step-card { padding: 8px 10px; }
+      .step-head { font-size: 0.85rem; }
+      .step-detail { font-size: 0.8rem; }
+      .step-verify { font-size: 0.78rem; padding: 4px 6px; }
+
+      .admin-item-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .admin-item-actions .btn {
+        width: 100%;
+        padding: 8px;
+      }
+
+      /* Modal adjustments for small screens */
+      .modal-overlay { padding: 8px; }
+      .modal-content { padding: 16px 12px; max-height: 94vh; }
+      .modal-content h2 { font-size: 1.1rem; }
+      .modal-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .modal-footer .btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -166,13 +256,13 @@
   <header>
     <div class="header-text">
       <h1>AQMS & CEMS Cloud Diagnostic Hub</h1>
-      <p style="color: var(--text-sub);">Real-time synchronized field diagnostic procedures.</p>
+      <p class="subtitle">Real-time synchronized field diagnostic procedures.</p>
     </div>
     <div class="header-controls">
       <span id="syncIndicator" class="sync-status">🟢 Connecting...</span>
       <span id="adminBadge" class="admin-indicator hidden">Admin Active</span>
       <button id="addModelBtn" class="btn btn-secondary hidden" onclick="promptAddNewModel()">+ Add Model</button>
-      <button id="addIssueBtn" class="btn btn-secondary hidden" onclick="openAddIssueModal()">+ Add New Entry</button>
+      <button id="addIssueBtn" class="btn btn-secondary hidden" onclick="openAddIssueModal()">+ Add Entry</button>
       <button id="adminLoginBtn" class="btn btn-primary" onclick="handleAdminToggle()">Admin Login</button>
     </div>
   </header>
@@ -215,9 +305,9 @@
       <input type="text" id="editProblem" placeholder="e.g. Alarm - Internal Temp">
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px;">
-      <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase;">Causes & Corresponding Actions:</span>
-      <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" onclick="addCauseActionBlock()">+ Add Cause & Action Pair</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px; gap: 8px; flex-wrap: wrap;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase;">Causes & Actions:</span>
+      <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="addCauseActionBlock()">+ Add Pair</button>
     </div>
 
     <div id="pairsContainer"></div>
@@ -231,7 +321,7 @@
 
 <!-- Hidden Password Admin Login Modal -->
 <div id="loginModal" class="modal-overlay hidden">
-  <div class="modal-content" style="max-width: 380px;">
+  <div class="modal-content" style="max-width: 360px;">
     <h2>Admin Login</h2>
     <div class="form-group">
       <label for="adminPinInput">Enter Admin PIN:</label>
@@ -240,7 +330,7 @@
         id="adminPinInput" 
         placeholder="••••" 
         autocomplete="off" 
-        style="font-size: 1.2rem; letter-spacing: 0.2em; text-align: center;"
+        style="font-size: 1.25rem; letter-spacing: 0.25em; text-align: center;"
       />
     </div>
     <div class="modal-footer">
@@ -464,7 +554,6 @@
     parentItem.classList.toggle('active');
   }
 
-  /* Admin Authentication Logic na Naka-mask ang Password */
   function handleAdminToggle() {
     if (!isAdmin) {
       adminPinInput.value = "";
@@ -511,11 +600,10 @@
   });
 
   function promptAddNewModel() {
-    const newName = prompt("Enter the name of the new analyzer model (e.g. Model 146i or EnviDAS / EnviDAS Ultimate):");
+    const newName = prompt("Enter analyzer model name (e.g. Model 146i or EnviDAS / EnviDAS Ultimate):");
     if (!newName || !newName.trim()) return;
 
     const fullTitle = newName.trim();
-    // Papalitan ang bawal na characters ng dash (-) para ligtas sa Firebase Key
     const safeKey = fullTitle.replace(/[\/\.#$\[\]]/g, '-');
     modelDisplayNames[safeKey] = fullTitle;
 
@@ -567,13 +655,13 @@
         <span class="modal-pair-badge">Cause & Action Set #${blockIndex}</span>
         <button type="button" class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="removeCauseActionBlock(this)">Remove</button>
       </div>
-      <div class="form-group" style="margin-bottom: 10px;">
+      <div class="form-group" style="margin-bottom: 8px;">
         <label>Probable Cause:</label>
-        <input type="text" class="pair-cause-input" placeholder="e.g. Instrument overheating or fan failure" value="${causeValue.replace(/"/g, '&quot;')}" />
+        <input type="text" class="pair-cause-input" placeholder="e.g. Instrument overheating" value="${causeValue.replace(/"/g, '&quot;')}" />
       </div>
       <div class="form-group" style="margin-bottom: 0;">
-        <label>Action / Solution Steps (Format: Title | Detail | Verification):</label>
-        <textarea rows="4" class="pair-steps-input" placeholder="Inspect Exhaust Fan | Check rear fan operation | Fan spins quietly without stalling">${stepsValue}</textarea>
+        <label>Action Steps (Format: Title | Detail | Verification):</label>
+        <textarea rows="3" class="pair-steps-input" placeholder="Inspect Fan | Check operation | Fan spins quietly">${stepsValue}</textarea>
       </div>
     `;
 
@@ -651,7 +739,7 @@
       const rawSteps = pairBlocks[i].querySelector('.pair-steps-input').value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
       if (!cause || rawSteps.length === 0) {
-        alert(`Cause and Solution steps in Set #${i + 1} cannot be empty. Follow the format: Title | Detail | Verification.`);
+        alert(`Cause and Solution steps in Set #${i + 1} cannot be empty. Follow format: Title | Detail | Verification.`);
         return;
       }
 
