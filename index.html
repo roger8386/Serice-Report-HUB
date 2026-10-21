@@ -2,806 +2,1150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AQMS & CEMS Cloud Diagnostic Hub</title>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Al-Sinan Co. - Master Service Log & Archival Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --bg: #0b1120;
-      --card-bg: #162032;
-      --panel-bg: #0d1524;
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --accent: #38bdf8;
-      --border: #26354a;
-      --border-focus: #38bdf8;
-      --alarm-red: #ef4444;
-      --alarm-title: #fca5a5;
-      --btn-bg: #0284c7;
-      --btn-hover: #0369a1;
-      --step-badge: #0284c7;
-      --success-green: #10b981;
+    /* PRECISE A4 LANDSCAPE 1-PAGE PRINT ENGINE */
+    @page {
+      size: A4 landscape;
+      margin: 4mm 5mm 4mm 5mm;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif; }
-    body { background-color: var(--bg); color: var(--text-main); padding: 20px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
-    .container { max-width: 1100px; margin: 0 auto; width: 100%; }
-    
-    /* Header layout */
-    header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 20px; 
-      gap: 16px; 
-      flex-wrap: wrap;
-    }
-    .header-text { flex: 1; min-width: 240px; }
-    h1 { font-size: 1.7rem; color: var(--accent); margin-bottom: 4px; line-height: 1.2; word-break: break-word; }
-    .subtitle { color: var(--text-sub); font-size: 0.9rem; }
-    
-    .header-controls { 
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-      flex-wrap: wrap; 
-      justify-content: flex-start; 
-    }
-    .sync-status { 
-      font-size: 0.8rem; 
-      color: var(--success-green); 
-      font-weight: 600; 
-      display: flex; 
-      align-items: center; 
-      gap: 6px; 
-      white-space: nowrap; 
-    }
-    .admin-indicator {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background-color: rgba(16, 185, 129, 0.15);
-      border: 1px solid var(--success-green);
-      color: var(--success-green);
-      white-space: nowrap;
-    }
-
-    .btn { padding: 8px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-    .btn-primary { background-color: var(--btn-bg); color: #fff; }
-    .btn-primary:hover { background-color: var(--btn-hover); }
-    .btn-danger { background-color: var(--alarm-red); color: #fff; }
-    .btn-danger:hover { background-color: #dc2626; }
-    .btn-secondary { background-color: var(--border); color: var(--text-main); }
-    .btn-secondary:hover { background-color: #334661; }
-
-    .step-box { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
-    .step-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 700; margin-bottom: 8px; display: block; }
-    select, input, textarea { width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--panel-bg); color: var(--text-main); font-size: 0.95rem; outline: none; }
-    select:focus, input:focus, textarea:focus { border-color: var(--border-focus); }
-
-    /* Accordion Problem Card */
-    .problem-list { display: flex; flex-direction: column; gap: 10px; }
-    .problem-item { border: 1px solid var(--border); background-color: var(--panel-bg); border-radius: 6px; overflow: hidden; transition: border-color 0.2s ease; }
-    .problem-item:hover { border-color: #3b506f; }
-    .problem-header { padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: none; width: 100%; border: none; color: inherit; text-align: left; }
-    .problem-title { font-size: 0.95rem; font-weight: 600; color: var(--alarm-title); display: flex; align-items: center; gap: 8px; word-break: break-word; }
-    .icon-toggle { color: var(--text-sub); font-size: 0.8rem; transition: transform 0.2s ease; margin-left: 8px; }
-    .problem-item.active .icon-toggle { transform: rotate(180deg); }
-    .solution-body { display: none; padding: 14px; background-color: rgba(0, 0, 0, 0.45); border-top: 1px solid var(--border); }
-    .problem-item.active .solution-body { display: block; }
-
-    /* Paired Cause & Action Box */
-    .diagnostic-pair-card {
-      background-color: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .diagnostic-pair-card:last-of-type { margin-bottom: 0; }
-    
-    .cause-row {
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      background-color: rgba(239, 68, 68, 0.08);
-      border-left: 3px solid var(--alarm-red);
-      border-radius: 4px;
-    }
-    .cause-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #f87171; margin-bottom: 2px; display: block; }
-    .cause-text { font-size: 0.9rem; color: #f1f5f9; font-weight: 500; word-break: break-word; }
-
-    .action-row {
-      padding-left: 2px;
-    }
-    .action-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 6px; display: block; }
-    
-    .steps-container { display: flex; flex-direction: column; gap: 8px; }
-    .step-card { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #1f2d42; border-radius: 6px; padding: 10px 12px; }
-    .step-head { display: flex; align-items: flex-start; gap: 8px; font-weight: 600; font-size: 0.9rem; color: #e2e8f0; margin-bottom: 4px; }
-    .step-badge { background-color: var(--step-badge); color: #fff; font-size: 0.68rem; min-width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
-    .step-detail { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 6px; word-break: break-word; }
-    .step-verify { font-size: 0.8rem; color: #34d399; background-color: rgba(52, 211, 153, 0.08); padding: 4px 8px; border-radius: 4px; display: block; word-break: break-word; }
-    
-    .admin-item-actions { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; }
-
-    /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 999; padding: 12px; }
-    .modal-content { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; max-width: 720px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
-    .modal-content h2 { font-size: 1.2rem; margin-bottom: 14px; color: var(--accent); }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
-    
-    .modal-pair-block {
-      background-color: rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-    .modal-pair-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .modal-pair-badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-transform: uppercase;
-    }
-    
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
-    .placeholder-msg { color: var(--text-sub); font-style: italic; text-align: center; padding: 20px 10px; font-size: 0.9rem; }
-    .hidden { display: none !important; }
-
-    /* =========================================================
-       MOBILE SPECIFIC OPTIMIZATIONS (Screen width <= 768px)
-       ========================================================= */
-    @media (max-width: 768px) {
-      body { padding: 12px; }
-      
-      header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-        margin-bottom: 16px;
+    @media print {
+      html, body {
+        width: 287mm !important;
+        height: 200mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        overflow: hidden !important;
       }
-      
-      .header-text { text-align: center; }
-      h1 { font-size: 1.4rem; }
-      .subtitle { font-size: 0.8rem; }
-
-      .header-controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        width: 100%;
-        justify-content: stretch;
+      .no-print { display: none !important; }
+      #homeView { display: none !important; }
+      #actionItemsView { display: none !important; }
+      #reportView { display: block !important; padding: 0 !important; margin: 0 !important; }
+      input, textarea, select {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        color: #000 !important;
       }
-
-      .sync-status {
-        grid-column: 1 / -1;
-        justify-content: center;
-        font-size: 0.8rem;
-        margin-bottom: 2px;
-      }
-
-      .admin-indicator {
-        grid-column: 1 / -1;
-        text-align: center;
-        font-size: 0.75rem;
-        padding: 6px;
-      }
-
-      /* Buttons take convenient touch target size on phone */
-      #addModelBtn, #addIssueBtn, #adminLoginBtn {
-        width: 100%;
-        padding: 10px 8px;
-        font-size: 0.82rem;
-      }
-
-      /* Single full-width button when not logged in */
-      #adminLoginBtn:only-child, 
-      .header-controls > #adminLoginBtn:nth-child(4) {
-        grid-column: 1 / -1;
-      }
-
-      .step-box { padding: 14px 12px; margin-bottom: 12px; border-radius: 6px; }
-      .step-label { font-size: 0.75rem; margin-bottom: 6px; }
-      select, input, textarea { padding: 10px; font-size: 0.9rem; }
-
-      .problem-header { padding: 12px; }
-      .problem-title { font-size: 0.9rem; }
-      .solution-body { padding: 12px 10px; }
-
-      .diagnostic-pair-card { padding: 10px; }
-      .cause-row { padding: 8px 10px; }
-      .cause-text { font-size: 0.85rem; }
-
-      .step-card { padding: 8px 10px; }
-      .step-head { font-size: 0.85rem; }
-      .step-detail { font-size: 0.8rem; }
-      .step-verify { font-size: 0.78rem; padding: 4px 6px; }
-
-      .admin-item-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-      }
-      .admin-item-actions .btn {
-        width: 100%;
-        padding: 8px;
-      }
-
-      /* Modal adjustments for small screens */
-      .modal-overlay { padding: 8px; }
-      .modal-content { padding: 16px 12px; max-height: 94vh; }
-      .modal-content h2 { font-size: 1.1rem; }
-      .modal-footer {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-      }
-      .modal-footer .btn { width: 100%; }
+      input[type="checkbox"] { accent-color: #000 !important; }
     }
+    .report-table th, .report-table td { border: 1px solid #000; }
   </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-900 font-sans text-xs">
 
-<div class="container">
-  <header>
-    <div class="header-text">
-      <h1>AQMS & CEMS Cloud Diagnostic Hub</h1>
-      <p class="subtitle">Diagnostic procedures specially design for Technical Department.</p>
-    </div>
-    <div class="header-controls">
-      <span id="syncIndicator" class="sync-status">🟢 Connecting...</span>
-      <span id="adminBadge" class="admin-indicator hidden">Admin Active</span>
-      <button id="addModelBtn" class="btn btn-secondary hidden" onclick="promptAddNewModel()">+ Add Model</button>
-      <button id="addIssueBtn" class="btn btn-secondary hidden" onclick="openAddIssueModal()">+ Add Entry</button>
-      <button id="adminLoginBtn" class="btn btn-primary" onclick="handleAdminToggle()">Admin Login</button>
-    </div>
-  </header>
-
-  <div class="step-box">
-    <label class="step-label" for="modelSelector">STEP 1: SELECT ANALYZER MODEL</label>
-    <select id="modelSelector">
-      <option value="">-- Select Model --</option>
-    </select>
+  <!-- AI SCANNER MODAL -->
+  <div id="aiLoadingModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white hidden">
+    <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-400 border-t-transparent mb-4"></div>
+    <h3 class="text-lg font-bold">Binabasa ng AI ang litrato...</h3>
+    <p class="text-xs text-slate-300 mt-1">Ini-extract ang sulat-kamay gamit ang Gemini 3.8 Flash. Sandali lamang...</p>
   </div>
 
-  <div class="step-box">
-    <span class="step-label">Steps 2 & 3: Alarms & Paired Corrective Solutions</span>
-    <div id="problemsContainer" class="problem-list">
-      <div class="placeholder-msg">Select an analyzer model above to begin.</div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Entry Form with Dynamic Paired Inputs -->
-<div id="adminModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h2 id="modalTitle">Troubleshooting Entry</h2>
-    <input type="hidden" id="editIndex" value="-1">
+  <!-- ======================================================== -->
+  <!-- 1. HOME DASHBOARD / MASTER REGISTRY                      -->
+  <!-- ======================================================== -->
+  <div id="homeView" class="p-4 sm:p-6 max-w-7xl mx-auto space-y-4">
     
-    <div class="form-group">
-      <label for="editModelInput">Target Model:</label>
-      <input 
-        type="text" 
-        id="editModelInput" 
-        list="modelDatalist" 
-        placeholder="Select from list or type a new model..." 
-        required 
-      />
-      <datalist id="modelDatalist"></datalist>
-    </div>
-
-    <div class="form-group">
-      <label for="editProblem">Alarm / Issue Title:</label>
-      <input type="text" id="editProblem" placeholder="e.g. Alarm - Internal Temp">
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 10px; gap: 8px; flex-wrap: wrap;">
-      <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase;">Causes & Actions:</span>
-      <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px;" onclick="addCauseActionBlock()">+ Add Pair</button>
-    </div>
-
-    <div id="pairsContainer"></div>
-
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeAdminModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveIssue()">Save to Cloud</button>
-    </div>
-  </div>
-</div>
-
-<!-- Hidden Password Admin Login Modal -->
-<div id="loginModal" class="modal-overlay hidden">
-  <div class="modal-content" style="max-width: 360px;">
-    <h2>Admin Login</h2>
-    <div class="form-group">
-      <label for="adminPinInput">Enter Admin PIN:</label>
-      <input 
-        type="password" 
-        id="adminPinInput" 
-        placeholder="••••" 
-        autocomplete="off" 
-        style="font-size: 1.25rem; letter-spacing: 0.25em; text-align: center;"
-      />
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAdminLogin()">Login</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC61LascxfSDWGq-Bx5Xj_Am_9bVrt48y8",
-    authDomain: "aqms-troubleshootin.firebaseapp.com",
-    databaseURL: "https://aqms-troubleshootin-default-rtdb.firebaseio.com",
-    projectId: "aqms-troubleshootin",
-    storageBucket: "aqms-troubleshootin.firebasestorage.app",
-    messagingSenderId: "482318487046",
-    appId: "1:482318487046:web:8896d267e19f9ac656bd87",
-    measurementId: "G-73LMX8VFBS"
-  };
-
-  let dbRef = null;
-  let isFirebaseAvailable = false;
-  try {
-    firebase.initializeApp(firebaseConfig);
-    dbRef = firebase.database().ref('cems_knowledge_base');
-    isFirebaseAvailable = true;
-  } catch (e) {
-    document.getElementById('syncIndicator').innerHTML = '⚠️ Offline Mode (Local Storage Only)';
-    document.getElementById('syncIndicator').style.color = '#f59e0b';
-  }
-
-  const modelDisplayNames = {
-    "48i": "Model 48i (CO Infrared Gas Filter Correlation Analyzer)",
-    "49i": "Model 49i (UV Photometric O₃ Analyzer)",
-    "55i": "Model 55i (NMHC / CH₄ FID Analyzer)",
-    "42i": "Model 42i (NO-NO₂-NOₓ Chemiluminescence)",
-    "43i": "Model 43i (Pulsed Fluorescence SO₂)",
-    "450i": "Model 450i (Pulsed Fluorescence H₂S - SO₂)",
-    "17i": "Model 17i (Ammonia NH₃ Chemiluminescence)",
-    "5014i": "Model 5014i (Beta Particulate Monitor)",
-    "5028i": "Model 5028i (Dual Channel Beta Monitor PM10/PM2.5)",
-    "111": "Model 111 (Zero Air Supply with External Compressor)",
-    "1150": "Model 1150 (CO Catalyst Reactor Module)"
-  };
-
-  const defaultDatabase = {
-    "48i": [], "49i": [], "55i": [], "42i": [], "43i": [],
-    "450i": [], "17i": [], "5014i": [], "5028i": [], "111": [], "1150": []
-  };
-
-  const ADMIN_PIN = "1986";
-  let isAdmin = false;
-  let activeDb = defaultDatabase;
-
-  const modelSelector = document.getElementById('modelSelector');
-  const editModelInput = document.getElementById('editModelInput');
-  const modelDatalist = document.getElementById('modelDatalist');
-  const problemsContainer = document.getElementById('problemsContainer');
-  const adminLoginBtn = document.getElementById('adminLoginBtn');
-  const adminBadge = document.getElementById('adminBadge');
-  const addModelBtn = document.getElementById('addModelBtn');
-  const addIssueBtn = document.getElementById('addIssueBtn');
-  const syncIndicator = document.getElementById('syncIndicator');
-
-  const loginModal = document.getElementById('loginModal');
-  const adminPinInput = document.getElementById('adminPinInput');
-
-  function renderModelDropdown(selectedKey) {
-    const prevSelected = selectedKey || modelSelector.value;
-    modelSelector.innerHTML = '<option value="">-- Select Model --</option>';
-    modelDatalist.innerHTML = '';
-
-    const keys = Object.keys(activeDb);
-
-    keys.forEach(key => {
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = modelDisplayNames[key] || key;
-      modelSelector.appendChild(opt);
-
-      const dOpt = document.createElement('option');
-      dOpt.value = key;
-      modelDatalist.appendChild(dOpt);
-    });
-
-    if (prevSelected && keys.includes(prevSelected)) {
-      modelSelector.value = prevSelected;
-    }
-  }
-
-  if (isFirebaseAvailable) {
-    dbRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        activeDb = data;
-        syncIndicator.innerHTML = '🟢 Cloud Connected';
-      } else {
-        dbRef.set(defaultDatabase);
-        syncIndicator.innerHTML = '🟢 Database Initialized';
-      }
-      renderModelDropdown();
-      renderProblems();
-    }, (error) => {
-      syncIndicator.innerHTML = '⚠️ Firebase Error: ' + error.message;
-      syncIndicator.style.color = '#ef4444';
-      renderModelDropdown();
-      renderProblems();
-    });
-  } else {
-    renderModelDropdown();
-    renderProblems();
-  }
-
-  function renderProblems() {
-    const selectedModel = modelSelector.value;
-    problemsContainer.innerHTML = '';
-
-    if (!selectedModel || !activeDb[selectedModel]) {
-      problemsContainer.innerHTML = `<div class="placeholder-msg">Select an analyzer model above to begin.</div>`;
-      return;
-    }
-
-    const items = activeDb[selectedModel];
-    if (!items || items.length === 0) {
-      problemsContainer.innerHTML = `<div class="placeholder-msg">No entries recorded for this model yet. Use Admin Mode to create entries.</div>`;
-      return;
-    }
-
-    items.forEach((item, index) => {
-      const problemDiv = document.createElement('div');
-      problemDiv.className = 'problem-item';
-
-      let pairsHtml = '';
-
-      if (item.pairs && Array.isArray(item.pairs)) {
-        pairsHtml = item.pairs.map((pair, pIdx) => {
-          const stepsHtml = (pair.steps || []).map((st, sIdx) => `
-            <div class="step-card">
-              <div class="step-head">
-                <span class="step-badge">${sIdx + 1}</span>
-                <span>${st.title}</span>
-              </div>
-              <div class="step-detail">${st.detail}</div>
-              <div class="step-verify"><strong>Verification: </strong>${st.verify}</div>
-            </div>
-          `).join('');
-
-          return `
-            <div class="diagnostic-pair-card">
-              <div class="cause-row">
-                <span class="cause-label">Probable Cause #${pIdx + 1}:</span>
-                <div class="cause-text">${pair.cause}</div>
-              </div>
-              <div class="action-row">
-                <span class="action-label">Corrective Action / Solution:</span>
-                <div class="steps-container">
-                  ${stepsHtml || '<div class="step-detail">No action specified.</div>'}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        const legacySteps = (item.steps || []).map((st, sIdx) => `
-          <div class="step-card">
-            <div class="step-head">
-              <span class="step-badge">${sIdx + 1}</span>
-              <span>${st.title}</span>
-            </div>
-            <div class="step-detail">${st.detail}</div>
-            <div class="step-verify"><strong>Verification: </strong>${st.verify}</div>
+    <!-- Top System Header -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl">🏛️</span>
+          <div>
+            <h1 class="text-lg sm:text-xl font-black uppercase tracking-tight text-slate-900">
+              Abdul Karim H. Al-Sinan & Partner Trading Co.
+            </h1>
+            <p class="text-[11px] text-slate-500 font-medium">Master Service Report Log & Tracking System (KAUST, SAMREF, YUNIGREEN, ETLCO, MA'ADEN, Methan)</p>
           </div>
-        `).join('');
-
-        pairsHtml = `
-          <div class="diagnostic-pair-card">
-            <div class="cause-row">
-              <span class="cause-label">Probable Causes:</span>
-              <div class="cause-text">${item.causes || 'None specified'}</div>
-            </div>
-            <div class="action-row">
-              <span class="action-label">Corrective Actions:</span>
-              <div class="steps-container">
-                ${legacySteps}
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      let adminActionsHtml = '';
-      if (isAdmin) {
-        adminActionsHtml = `
-          <div class="admin-item-actions">
-            <button class="btn btn-secondary" onclick="editIssue('${selectedModel}', ${index})">✏️ Edit</button>
-            <button class="btn btn-danger" onclick="deleteIssue('${selectedModel}', ${index})">🗑️ Delete</button>
-          </div>
-        `;
-      }
-
-      problemDiv.innerHTML = `
-        <button class="problem-header" onclick="toggleProblem(this)">
-          <span class="problem-title">⚠️ ${item.problem}</span>
-          <span class="icon-toggle">▼</span>
-        </button>
-        <div class="solution-body">
-          ${pairsHtml}
-          ${adminActionsHtml}
         </div>
-      `;
-
-      problemsContainer.appendChild(problemDiv);
-    });
-  }
-
-  modelSelector.addEventListener('change', renderProblems);
-
-  function toggleProblem(buttonElement) {
-    const parentItem = buttonElement.closest('.problem-item');
-    parentItem.classList.toggle('active');
-  }
-
-  function handleAdminToggle() {
-    if (!isAdmin) {
-      adminPinInput.value = "";
-      loginModal.classList.remove('hidden');
-      setTimeout(() => adminPinInput.focus(), 50);
-    } else {
-      isAdmin = false;
-      adminBadge.classList.add('hidden');
-      addModelBtn.classList.add('hidden');
-      addIssueBtn.classList.add('hidden');
-      adminLoginBtn.textContent = "Admin Login";
-      adminLoginBtn.className = "btn btn-primary";
-      renderProblems();
-    }
-  }
-
-  function closeLoginModal() {
-    loginModal.classList.add('hidden');
-    adminPinInput.value = "";
-  }
-
-  function submitAdminLogin() {
-    const pin = adminPinInput.value.trim();
-    if (pin === ADMIN_PIN) {
-      isAdmin = true;
-      adminBadge.classList.remove('hidden');
-      addModelBtn.classList.remove('hidden');
-      addIssueBtn.classList.remove('hidden');
-      adminLoginBtn.textContent = "Logout";
-      adminLoginBtn.className = "btn btn-danger";
-      closeLoginModal();
-      renderProblems();
-    } else {
-      alert("Invalid PIN. Access denied.");
-      adminPinInput.value = "";
-      adminPinInput.focus();
-    }
-  }
-
-  adminPinInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      submitAdminLogin();
-    }
-  });
-
-  function promptAddNewModel() {
-    const newName = prompt("Enter analyzer model name (e.g. Model 146i or EnviDAS / EnviDAS Ultimate):");
-    if (!newName || !newName.trim()) return;
-
-    const fullTitle = newName.trim();
-    const safeKey = fullTitle.replace(/[\/\.#$\[\]]/g, '-');
-    modelDisplayNames[safeKey] = fullTitle;
-
-    if (!activeDb[safeKey]) {
-      activeDb[safeKey] = [
-        {
-          problem: "Initial Baseline Check",
-          pairs: [
-            {
-              cause: "Initial configuration check for new model",
-              steps: [
-                { title: "Power and Diagnostic Verification", detail: "Verify supply voltages, communication links, and baseline sensor outputs.", verify: "Diagnostics report normal status." }
-              ]
-            }
-          ]
-        }
-      ];
-
-      if (isFirebaseAvailable) {
-        dbRef.set(activeDb).then(() => {
-          renderModelDropdown(safeKey);
-          modelSelector.value = safeKey;
-          renderProblems();
-        }).catch(err => alert("Error saving to cloud: " + err.message));
-      } else {
-        renderModelDropdown(safeKey);
-        modelSelector.value = safeKey;
-        renderProblems();
-      }
-    } else {
-      modelSelector.value = safeKey;
-      renderProblems();
-    }
-  }
-
-  const adminModal = document.getElementById('adminModal');
-  const editIndexInput = document.getElementById('editIndex');
-  const editProblemInput = document.getElementById('editProblem');
-  const pairsContainer = document.getElementById('pairsContainer');
-  const modalTitle = document.getElementById('modalTitle');
-
-  function addCauseActionBlock(causeValue = "", stepsValue = "") {
-    const blockIndex = pairsContainer.children.length + 1;
-    const blockDiv = document.createElement('div');
-    blockDiv.className = 'modal-pair-block';
-
-    blockDiv.innerHTML = `
-      <div class="modal-pair-header">
-        <span class="modal-pair-badge">Cause & Action Set #${blockIndex}</span>
-        <button type="button" class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="removeCauseActionBlock(this)">Remove</button>
       </div>
-      <div class="form-group" style="margin-bottom: 8px;">
-        <label>Probable Cause:</label>
-        <input type="text" class="pair-cause-input" placeholder="e.g. Instrument overheating" value="${causeValue.replace(/"/g, '&quot;')}" />
+
+      <!-- Action & Export Controls -->
+      <div class="flex flex-wrap items-center gap-2 no-print w-full lg:w-auto justify-start lg:justify-end">
+        <!-- Tab Switchers -->
+        <button id="btnTabLog" onclick="switchMainTab('log')" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow">
+          📋 Master Log (92)
+        </button>
+        <button id="btnTabActions" onclick="switchMainTab('actions')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-lg text-xs border border-amber-300">
+          ⚠️ Action Items (43)
+        </button>
+
+        <!-- Export CSV Button -->
+        <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shadow">
+          📥 Export CSV (Excel)
+        </button>
+
+        <!-- Admin Login -->
+        <button id="adminLoginBtn" onclick="toggleAdminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold px-3 py-2 rounded-lg text-xs flex items-center gap-1">
+          <span id="adminStatusIcon">🔒</span> <span id="adminStatusText">Admin Login</span>
+        </button>
+
+        <!-- New Report Button -->
+        <button onclick="createNewReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1 shadow">
+          ➕ New Report
+        </button>
       </div>
-      <div class="form-group" style="margin-bottom: 0;">
-        <label>Action Steps (Format: Title | Detail | Verification):</label>
-        <textarea rows="3" class="pair-steps-input" placeholder="Inspect Fan | Check operation | Fan spins quietly">${stepsValue}</textarea>
+    </div>
+
+    <!-- FILTER & SEARCH TOOLBAR -->
+    <div id="filterToolbar" class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3 no-print">
+      <!-- Search Input -->
+      <div class="w-full md:w-96 relative">
+        <input 
+          type="text" 
+          id="homeSearchInput" 
+          oninput="renderTable()" 
+          placeholder="🔍 Search Report#, Ref/PO, Client, Engineer, Scope..." 
+          class="w-full bg-slate-50 text-xs rounded-lg pl-3 pr-8 py-2 border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+        <button onclick="document.getElementById('homeSearchInput').value=''; renderTable();" class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs">✕</button>
       </div>
-    `;
 
-    pairsContainer.appendChild(blockDiv);
-  }
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+        <!-- Client Filter -->
+        <select id="clientFilter" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-medium">
+          <option value="ALL">All Clients / Sites</option>
+          <option value="KAUST">KAUST (Thuwal)</option>
+          <option value="SAMREF">SAMREF (Yanbu)</option>
+          <option value="YUNIGREEN">YUNIGREEN (Yanbu)</option>
+          <option value="MA'ADEN">MA'ADEN (Riyadh)</option>
+          <option value="ETLCO">ETLCO (Jubail)</option>
+          <option value="Methan">Methan Mobile</option>
+        </select>
 
-  function removeCauseActionBlock(btn) {
-    const block = btn.closest('.modal-pair-block');
-    block.remove();
-    const badges = pairsContainer.querySelectorAll('.modal-pair-badge');
-    badges.forEach((b, i) => b.textContent = `Cause & Action Set #${i + 1}`);
-  }
+        <!-- Status Filter -->
+        <select id="statusFilter" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-medium">
+          <option value="ALL">All Statuses</option>
+          <option value="Completed">Completed</option>
+          <option value="Pending">Pending / In Progress</option>
+        </select>
 
-  function openAddIssueModal() {
-    modalTitle.textContent = "Add Troubleshooting Entry";
-    editIndexInput.value = "-1";
-    editModelInput.value = modelSelector.value || "";
-    editProblemInput.value = "";
-    pairsContainer.innerHTML = "";
-    addCauseActionBlock();
-    adminModal.classList.remove('hidden');
-  }
+        <!-- Sort Select -->
+        <select id="sortSelect" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-medium">
+          <option value="item-desc">Item # (Newest First)</option>
+          <option value="item-asc">Item # (Oldest First)</option>
+          <option value="report-desc">Report No. (High-Low)</option>
+          <option value="report-asc">Report No. (Low-High)</option>
+          <option value="client-asc">Client Name (A-Z)</option>
+        </select>
+      </div>
+    </div>
 
-  function editIssue(model, index) {
-    const item = activeDb[model][index];
-    modalTitle.textContent = "Edit Troubleshooting Entry";
-    editIndexInput.value = index;
-    editModelInput.value = model;
-    editProblemInput.value = item.problem;
-    pairsContainer.innerHTML = "";
+    <!-- MASTER LOG TABLE VIEW -->
+    <div id="masterLogContainer" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto max-h-[70vh]">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-100 uppercase text-[10px] font-bold border-b border-slate-200 sticky top-0 z-10">
+            <tr>
+              <th class="p-2.5 w-12 text-center">#</th>
+              <th class="p-2.5 w-20">Report No.</th>
+              <th class="p-2.5 w-28">Service Date</th>
+              <th class="p-2.5 w-36">Client / Site</th>
+              <th class="p-2.5 w-40">System / Station</th>
+              <th class="p-2.5 w-32">Service Type</th>
+              <th class="p-2.5 w-36">Engineers</th>
+              <th class="p-2.5">Findings / Comments</th>
+              <th class="p-2.5 w-24 text-center">Status</th>
+              <th class="p-2.5 w-24 text-right no-print">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <div id="emptyNotice" class="p-8 text-center text-slate-400 text-xs hidden">
+        No service reports matching your search/filter criteria.
+      </div>
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-[11px] text-slate-500 font-medium">
+        <span>Showing <strong id="recordCount" class="text-slate-800">0</strong> reports</span>
+        <div class="space-x-2">
+          <button onclick="backupJSON()" class="text-blue-600 hover:underline">💾 Backup Database (JSON)</button>
+          <span>•</span>
+          <button onclick="restoreJSON()" class="text-blue-600 hover:underline">📂 Restore Database</button>
+        </div>
+      </div>
+    </div>
 
-    if (item.pairs && Array.isArray(item.pairs)) {
-      item.pairs.forEach(p => {
-        const stepsText = (p.steps || []).map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
-        addCauseActionBlock(p.cause, stepsText);
-      });
-    } else {
-      const legacyStepsText = (item.steps || []).map(s => `${s.title} | ${s.detail} | ${s.verify}`).join('\n');
-      addCauseActionBlock(item.causes || "", legacyStepsText);
-    }
+    <!-- ACTION ITEMS TRACKER VIEW (TAB 2) -->
+    <div id="actionItemsContainer" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
+      <div class="p-4 bg-amber-50 border-b border-amber-200 flex justify-between items-center">
+        <div>
+          <h2 class="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+            <span>⚠️</span> Pending Action Items & Defective Parts Tracker
+          </h2>
+          <p class="text-[11px] text-amber-700">Follow-up repairs, pull-outs, factory calibrations (MLU, Grimm, Chromatotec), and spare parts needed.</p>
+        </div>
+        <button onclick="exportActionItemsCSV()" class="bg-amber-700 hover:bg-amber-800 text-white font-bold px-3 py-1.5 rounded text-xs shadow">
+          📥 Export Action Items CSV
+        </button>
+      </div>
+      <div class="overflow-x-auto max-h-[70vh]">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-100 uppercase text-[10px] font-bold border-b border-slate-200 sticky top-0 z-10">
+            <tr>
+              <th class="p-2.5 w-20">Report No.</th>
+              <th class="p-2.5 w-36">Station / Equipment</th>
+              <th class="p-2.5 w-28">Category</th>
+              <th class="p-2.5">Item / Observation</th>
+              <th class="p-2.5">Action Required</th>
+              <th class="p-2.5 w-36">Assigned Engineers</th>
+              <th class="p-2.5 w-16 text-center no-print">Open</th>
+            </tr>
+          </thead>
+          <tbody id="actionItemsTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
 
-    if (pairsContainer.children.length === 0) {
-      addCauseActionBlock();
-    }
+  </div>
 
-    adminModal.classList.remove('hidden');
-  }
+  <!-- ======================================================== -->
+  <!-- 2. REPORT VIEW / 1-PAGE A4 LANDSCAPE                     -->
+  <!-- ======================================================== -->
+  <div id="reportView" class="p-2 sm:p-4 hidden">
+    
+    <!-- Top Action Bar -->
+    <div class="max-w-[287mm] mx-auto bg-slate-900 text-white p-2.5 rounded-t-lg no-print flex flex-wrap justify-between items-center gap-2">
+      <button onclick="goHome()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded font-semibold border border-slate-700">
+        ⬅️ Back to Master Log
+      </button>
 
-  function closeAdminModal() {
-    adminModal.classList.add('hidden');
-  }
+      <!-- AI AUTO-FILL BUTTON -->
+      <div class="flex items-center gap-2">
+        <input type="file" id="aiImageInput" accept="image/*" class="hidden" onchange="processImageWithAI(this)">
+        <button type="button" onclick="document.getElementById('aiImageInput').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1.5">
+          <span>📸</span> Auto-Fill from Photo
+        </button>
+      </div>
 
-  function saveIssue() {
-    const rawModel = editModelInput.value.trim();
-    const index = parseInt(editIndexInput.value, 10);
-    const problem = editProblemInput.value.trim();
+      <!-- Drive Proof Link -->
+      <div class="flex items-center gap-2 flex-1 max-w-sm mx-2">
+        <span class="text-xs text-blue-300 font-bold whitespace-nowrap">📎 Drive Proof URL:</span>
+        <input type="url" id="driveLink" placeholder="https://drive.google.com/..." class="bg-slate-800 text-white text-xs px-2 py-1 rounded border border-slate-700 w-full">
+        <button type="button" onclick="testDriveLink()" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] px-2 py-1 rounded font-bold whitespace-nowrap">
+          Open ↗
+        </button>
+      </div>
 
-    if (!rawModel || !problem) {
-      alert("Please specify both a Model and an Alarm/Problem Title.");
-      return;
-    }
+      <div class="flex items-center gap-2">
+        <span id="formAccessBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300">
+          Read-Only
+        </span>
+        <button id="saveReportBtn" onclick="saveReportData()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded shadow">
+          💾 Save
+        </button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+          🖨️ Print 1-Page
+        </button>
+      </div>
+    </div>
 
-    const model = rawModel.replace(/[\/\.#$\[\]]/g, '-');
-    modelDisplayNames[model] = rawModel;
-
-    const pairBlocks = pairsContainer.querySelectorAll('.modal-pair-block');
-    if (pairBlocks.length === 0) {
-      alert("Please add at least one Cause & Action pair.");
-      return;
-    }
-
-    const pairs = [];
-    for (let i = 0; i < pairBlocks.length; i++) {
-      const cause = pairBlocks[i].querySelector('.pair-cause-input').value.trim();
-      const rawSteps = pairBlocks[i].querySelector('.pair-steps-input').value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-      if (!cause || rawSteps.length === 0) {
-        alert(`Cause and Solution steps in Set #${i + 1} cannot be empty. Follow format: Title | Detail | Verification.`);
-        return;
-      }
-
-      const steps = rawSteps.map(line => {
-        const parts = line.split('|').map(p => p.trim());
-        return {
-          title: parts[0] || "Corrective Step",
-          detail: parts[1] || parts[0] || "Execute procedure.",
-          verify: parts[2] || "Confirm normal status in diagnostics."
-        };
-      });
-
-      pairs.push({ cause, steps });
-    }
-
-    const newEntry = { problem, pairs };
-
-    if (!activeDb[model]) {
-      activeDb[model] = [];
-    }
-
-    if (index === -1) {
-      activeDb[model].push(newEntry);
-    } else {
-      activeDb[model][index] = newEntry;
-    }
-
-    if (isFirebaseAvailable) {
-      dbRef.set(activeDb).then(() => {
-        closeAdminModal();
-        renderModelDropdown(model);
-        modelSelector.value = model;
-        renderProblems();
-      }).catch(err => alert("Error saving to cloud: " + err.message));
-    } else {
-      closeAdminModal();
-      renderModelDropdown(model);
-      modelSelector.value = model;
-      renderProblems();
-    }
-  }
-
-  function deleteIssue(model, index) {
-    if (confirm("Are you sure you want to permanently delete this troubleshooting entry from the cloud database?")) {
-      activeDb[model].splice(index, 1);
+    <!-- PRINTABLE PAPER CANVAS (287mm x 198mm) -->
+    <div class="w-full max-w-[287mm] mx-auto bg-white p-2 border-2 border-black print:border print:p-1 text-[10px] leading-tight select-text">
       
-      if (activeDb[model].length === 0) {
-        delete activeDb[model];
-      }
+      <!-- HEADER ROW -->
+      <div class="border border-black flex items-stretch">
+        <div class="w-[38%] p-1.5 border-r border-black flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full border border-black flex items-center justify-center font-black text-sm flex-shrink-0">KA</div>
+          <div class="text-[9px] leading-[1.15]">
+            <h2 class="font-extrabold uppercase text-[11px]">Abdul Karim H. Al-Sinan & Partner For Trading Co.</h2>
+            <div class="font-bold">C.R. 2055001448 &bull; Kytos Arabia</div>
+            <div>P.O. Box 374 - Al-Jubail 31951 - Tel: 0133505200 - Fax: 0133624886</div>
+            <div>E-mail: sales@sinanakh.com - Website: www.sinanakh.com</div>
+          </div>
+        </div>
 
-      if (isFirebaseAvailable) {
-        dbRef.set(activeDb).then(() => {
-          renderModelDropdown();
-          renderProblems();
-        });
+        <div class="w-[37%] p-1 border-r border-black text-center flex flex-col justify-center">
+          <h1 class="text-xl font-black tracking-widest uppercase">SERVICE REPORT</h1>
+          <div class="font-bold text-[10px] uppercase">CUSTOMER INFORMATION</div>
+        </div>
+
+        <div class="w-[25%] p-1.5 flex flex-col justify-between">
+          <div class="flex justify-between items-center border-b border-black pb-1">
+            <span class="font-black text-xs">Report No.:</span>
+            <input type="text" id="reportNo" class="w-24 font-black text-red-600 text-sm text-right px-1" placeholder="4597">
+          </div>
+          <div class="flex justify-between items-center pt-1 text-[9px]">
+            <div class="flex items-center gap-1">
+              <span class="font-bold">Our Ref. No.:</span>
+              <input type="text" id="refNo" class="w-24 font-bold border-b border-black px-1" placeholder="202501923">
+            </div>
+            <div class="flex items-center gap-1 font-bold">
+              Sheet <input type="text" value="1" class="w-4 text-center border-b border-black"> of <input type="text" value="1" class="w-4 text-center border-b border-black">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 1: TRAVEL TIME | CUSTOMER DETAILS | PARTS -->
+      <div class="border-x border-b border-black flex items-stretch">
+        
+        <div class="w-[22%] border-r border-black p-1 flex flex-col justify-between text-[9px]">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="border-b border-black text-center font-bold">
+                <th class="text-left py-0.5">TRAVEL / WORK TIME</th>
+                <th class="w-16 border-l border-black">DATE</th>
+                <th class="w-10 border-l border-black">HOURS</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-black">
+              <tr>
+                <td class="font-semibold py-0.5">Travel Time to Site</td>
+                <td class="border-l border-black"><input type="text" id="travelDate" class="w-full text-center"></td>
+                <td class="border-l border-black"><input type="text" id="travelHours" class="w-full text-center"></td>
+              </tr>
+              <tr>
+                <td class="font-semibold py-0.5">Gate Pass Processing</td>
+                <td class="border-l border-black"><input type="text" id="gatePassDate" class="w-full text-center"></td>
+                <td class="border-l border-black"><input type="text" id="gatePassHours" class="w-full text-center"></td>
+              </tr>
+              <tr>
+                <td colspan="3" class="pt-1 font-bold">WORK TIME:</td>
+              </tr>
+              <tr>
+                <td class="pl-2">Start:</td>
+                <td colspan="2" class="border-l border-black"><input type="text" id="workStart" class="w-full px-1"></td>
+              </tr>
+              <tr>
+                <td class="pl-2">Departure:</td>
+                <td colspan="2" class="border-l border-black"><input type="text" id="workDepart" class="w-full px-1"></td>
+              </tr>
+              <tr class="font-bold border-t border-black bg-slate-50">
+                <td>TOTAL HOURS:</td>
+                <td colspan="2" class="border-l border-black"><input type="text" id="totalHours" class="w-full text-center font-bold"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="w-[43%] border-r border-black p-1.5 flex flex-col justify-between text-[9px]">
+          <div class="space-y-1">
+            <div class="flex items-center">
+              <span class="w-24 font-bold uppercase">COMPANY NAME:</span>
+              <input type="text" id="custCompany" class="flex-1 font-bold border-b border-black px-1">
+            </div>
+            <div class="flex items-center">
+              <span class="w-24 font-bold uppercase">LOCATION:</span>
+              <input type="text" id="custLocation" class="flex-1 border-b border-black px-1">
+            </div>
+            <div class="flex items-center">
+              <span class="w-24 font-bold uppercase">CONTACT NAME:</span>
+              <input type="text" id="custContact" class="flex-1 border-b border-black px-1">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center">
+                <span class="w-20 font-bold uppercase">P.O. NUMBER:</span>
+                <input type="text" id="custPO" class="flex-1 border-b border-black px-1">
+              </div>
+              <div class="flex items-center">
+                <span class="w-16 font-bold uppercase">PHONE:</span>
+                <input type="text" id="custPhone" class="flex-1 border-b border-black px-1">
+              </div>
+            </div>
+            <div class="pt-1 border-t border-slate-300">
+              <div class="font-bold uppercase text-[8px] text-slate-500">BILL TO ADDRESS:</div>
+              <input type="text" id="custAddress" class="w-full border-b border-black px-1 text-[9px]">
+            </div>
+          </div>
+        </div>
+
+        <div class="w-[35%] p-1 flex flex-col justify-between text-[9px]">
+          <div>
+            <div class="font-bold text-center uppercase tracking-wider border-b border-black pb-0.5 mb-0.5">PARTS</div>
+            <table class="w-full border-collapse report-table text-[9px]">
+              <thead class="bg-slate-50 text-[8px] font-bold">
+                <tr>
+                  <th class="w-7 py-0.5">Qty</th>
+                  <th>DESCRIPTION</th>
+                  <th class="w-16">PART NUMBER</th>
+                  <th class="w-12">UNIT COST</th>
+                  <th class="w-14">AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody id="partsBody">
+                <tr>
+                  <td><input type="number" class="part-qty w-full text-center"></td>
+                  <td><input type="text" class="w-full px-0.5"></td>
+                  <td><input type="text" class="w-full text-center"></td>
+                  <td><input type="number" step="0.01" class="part-cost w-full text-right px-0.5"></td>
+                  <td><input type="text" readonly class="part-amount w-full text-right px-0.5 font-bold"></td>
+                </tr>
+                <tr>
+                  <td><input type="number" class="part-qty w-full text-center"></td>
+                  <td><input type="text" class="w-full px-0.5"></td>
+                  <td><input type="text" class="w-full text-center"></td>
+                  <td><input type="number" step="0.01" class="part-cost w-full text-right px-0.5"></td>
+                  <td><input type="text" readonly class="part-amount w-full text-right px-0.5 font-bold"></td>
+                </tr>
+                <tr>
+                  <td><input type="number" class="part-qty w-full text-center"></td>
+                  <td><input type="text" class="w-full px-0.5"></td>
+                  <td><input type="text" class="w-full text-center"></td>
+                  <td><input type="number" step="0.01" class="part-cost w-full text-right px-0.5"></td>
+                  <td><input type="text" readonly class="part-amount w-full text-right px-0.5 font-bold"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-between items-center border-t border-black pt-1 font-bold text-[9px]">
+            <span>TOTAL COST OF PARTS:</span>
+            <span id="grandTotal" class="font-black text-right px-1">0.00</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: UPGRADES / CALIBRATION STRIP & SERVICE TYPE CHECKBOXES -->
+      <div class="border-x border-b border-black flex items-stretch text-[9px]">
+        <div class="w-[50%] border-r border-black p-1 flex items-center gap-2">
+          <span class="font-bold uppercase whitespace-nowrap">UPGRADES OR CALIBRATION CHANGES:</span>
+          <input type="text" id="upgradesChanges" class="w-full border-b border-black font-semibold px-1">
+        </div>
+        <div class="w-[50%] p-1 grid grid-cols-3 gap-x-2 gap-y-0.5 text-[8.5px] font-bold">
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="TRAINING"> TRAINING</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="START-UP"> START-UP</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="REPAIR"> REPAIR</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="MODIFICATION"> MODIFICATION</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="WARRANTY"> WARRANTY</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="PREVENTIVE MAINTENANCE"> PREVENTIVE MAINTENANCE</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="EMERGENCY CALL OUT"> EMERGENCY CALL OUT</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="INSPECTION"> INSPECTION</label>
+          <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="CALIBRATION"> CALIBRATION</label>
+        </div>
+      </div>
+
+      <!-- ROW 3: SYMPTOMS | CORRECTIVE ACTIONS | COMMENTS -->
+      <div class="border-x border-b border-black flex items-stretch h-[78mm]">
+        
+        <div class="w-[33.33%] border-r border-black p-1 flex flex-col">
+          <div class="font-bold uppercase border-b border-black pb-0.5 mb-1 text-center bg-slate-50">SYMPTOM</div>
+          <textarea id="symptomsText" class="w-full flex-1 resize-none p-1 leading-snug border-none text-[9.5px]"></textarea>
+        </div>
+
+        <div class="w-[36.66%] border-r border-black p-1 flex flex-col">
+          <div class="font-bold uppercase border-b border-black pb-0.5 mb-1 text-center bg-slate-50">CORRECTIVE ACTION / SERVICE PERFORMED</div>
+          <textarea id="correctiveActionText" class="w-full flex-1 resize-none p-1 leading-snug border-none text-[9.5px]"></textarea>
+        </div>
+
+        <div class="w-[30%] p-1 flex flex-col justify-between">
+          <div class="flex-1 flex flex-col border-b border-black pb-1 mb-1">
+            <div class="font-bold uppercase border-b border-black pb-0.5 mb-1 text-center bg-slate-50">SERVICE ENGINEER COMMENTS</div>
+            <textarea id="engrComments" class="w-full flex-1 resize-none p-1 leading-snug border-none text-[9px]"></textarea>
+          </div>
+          <div class="h-20 flex flex-col">
+            <div class="font-bold uppercase border-b border-black pb-0.5 mb-0.5 text-center bg-slate-50">CUSTOMER'S COMMENTS</div>
+            <textarea id="custComments" class="w-full flex-1 resize-none p-1 leading-snug border-none text-[9px]"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 4: ACCOUNTING BOX | ANALYZER INFO & ENG SIGN | CUSTOMER SIGN -->
+      <div class="border-x border-b border-black flex items-stretch text-[8.5px]">
+        
+        <div class="w-[28%] border-r border-black p-1">
+          <div class="font-bold text-center uppercase tracking-wider text-[8px] border-b border-black pb-0.5">- FOR ACCOUNTING USE ONLY -</div>
+          <div class="grid grid-cols-2 divide-x divide-black border-b border-black py-0.5">
+            <div class="pr-1">
+              <div class="flex justify-between py-0.5"><span>Labor Time:</span> <input type="text" class="w-10 text-right"></div>
+              <div class="flex justify-between py-0.5"><span>Materials:</span> <input type="text" class="w-10 text-right"></div>
+              <div class="flex justify-between py-0.5"><span>Shipping:</span> <input type="text" class="w-10 text-right"></div>
+              <div class="flex justify-between font-bold border-t border-black pt-0.5"><span>Total Col 1:</span> <input type="text" class="w-10 text-right font-bold"></div>
+            </div>
+            <div class="pl-1">
+              <div class="flex justify-between py-0.5"><span>Travel Time:</span> <input type="text" class="w-10 text-right"></div>
+              <div class="flex justify-between py-0.5"><span>Travel Exp:</span> <input type="text" class="w-10 text-right"></div>
+              <div class="flex justify-between py-0.5 font-bold border-t border-black pt-0.5"><span>Total Col 2:</span> <input type="text" class="w-10 text-right font-bold"></div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-0.5 font-bold text-[9px]">
+            <span>TOTAL COSTS SR:</span>
+            <input type="text" class="w-16 font-black text-right">
+          </div>
+        </div>
+
+        <div class="w-[42%] border-r border-black p-1 flex flex-col justify-between">
+          <div class="border-b border-black pb-1">
+            <div class="font-bold uppercase text-[8px] text-slate-600 mb-0.5">ANALYZER INFORMATION:</div>
+            <div class="grid grid-cols-3 gap-1">
+              <div><span class="font-bold">RANGE:</span> <input type="text" id="anaRange" class="w-full border-b border-black"></div>
+              <div><span class="font-bold">STREAM:</span> <input type="text" id="anaStream" class="w-full border-b border-black"></div>
+              <div><span class="font-bold">MODEL:</span> <input type="text" id="anaModel" class="w-full border-b border-black"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-0.5">
+              <div><span class="font-bold">WO #:</span> <input type="text" id="anaWO" class="w-full border-b border-black"></div>
+              <div><span class="font-bold">SER #:</span> <input type="text" id="anaSer" class="w-full border-b border-black"></div>
+            </div>
+          </div>
+          <div class="pt-1">
+            <div class="flex items-center gap-1">
+              <span class="font-bold uppercase text-[8px]">PRINT SERVICE ENGINEER'S NAME:</span>
+              <input type="text" id="engrName" class="flex-1 border-b border-black px-1 font-semibold">
+            </div>
+            <div class="flex items-center gap-1 mt-1">
+              <span class="font-bold uppercase text-[8px]">SERVICE ENGINEER'S SIGNATURE:</span>
+              <input type="text" id="engrSign" class="flex-1 border-b border-black px-1">
+            </div>
+          </div>
+        </div>
+
+        <div class="w-[30%] p-1 flex flex-col justify-between">
+          <div class="space-y-2">
+            <div>
+              <div class="font-bold uppercase text-[8px] mb-0.5">PRINT CUSTOMER'S NAME:</div>
+              <input type="text" id="authCustName" class="w-full border-b border-black px-1 font-bold text-[10px]">
+            </div>
+            <div>
+              <div class="font-bold uppercase text-[8px] mb-0.5">AUTHORIZED CUSTOMER'S SIGNATURE:</div>
+              <input type="text" id="authCustSign" class="w-full border-b border-black px-1">
+            </div>
+          </div>
+          <div class="text-[8px] text-slate-400 italic text-right">Verification of Service Completion</div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex justify-between items-center text-[7.5px] font-bold tracking-wider uppercase px-2 pt-1">
+        <span>WHITE: JOB FILE</span>
+        <span>PINK: ACCOUNTING</span>
+        <span>BLUE: SERIAL RECORD FILE</span>
+        <span>YELLOW: CUSTOMER</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 3. JAVASCRIPT: MASTER DATABASE, EXPORTS & ENGINES        -->
+  <!-- ======================================================== -->
+  <script>
+    const STORAGE_KEY = 'AL_SINAN_MASTER_REPORTS_V1';
+    const ACTION_ITEMS_KEY = 'AL_SINAN_ACTION_ITEMS_V1';
+    const GEMINI_API_KEY_STORAGE = 'GEMINI_API_KEY';
+    const ADMIN_PASS = 'admin123';
+    let currentIsAdmin = false;
+    let currentTab = 'log'; // 'log' or 'actions'
+
+    // ==========================================
+    // INITIALIZE 92 MASTER SERVICE REPORTS DATA
+    // ==========================================
+    const DEFAULT_MASTER_LOG = [
+      { item: 1, reportNo: "3199", date: "Oct 20-21, 2021", client: "KAUST (Thuwal)", refPO: "Ref: 2019FS92-19651 / PO: 4500201829", station: "AQMS Station", type: "Preventive Maintenance", engineers: "Mildwin Cole", scope: "Replaced air filter at manifold cabinet; cleaned sample inlet tube & head of PM5014i/5028i; checked sample inlet tube for moisture; checked exhaust filters; cleaned met sensors; performed zero & span calibration of analyzers; checked Envidas & Met One datalogger; checked UPS status; housekeeping.", comments: "Monthly maintenance completed successfully. Checked cylinder pressures and station logs.", status: "Completed" },
+      { item: 2, reportNo: "3200", date: "Oct 20-21, 2021", client: "KAUST (Thuwal)", refPO: "Ref: 2019-445-18684 / PO: 4500201829", station: "AQMS Analyzers (42i, PM, 55i)", type: "Repair / Warranty", engineers: "Mildwin Cole", scope: "Cleaned sample inlet tube, head, and detector of PM2.5/10; performed detector & foil calibration; inspected 42i high chamber pressure; cleaned vacuum pump diaphragm & capillaries; started 55i methane analyzer after flame out; replaced HEPA filter.", comments: "PM2.5/10 analyzer placed under 2-day observation. Need to order pump rebuild kit and vacuum pump diaphragm. RH sensor defective, requires replacement.", status: "Pending Parts" },
+      { item: 3, reportNo: "3260", date: "Dec 26-27, 2021", client: "KAUST (Thuwal)", refPO: "Ref: 2019FS92-19651", station: "KAUST Mobile AQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned & dedusted all met sensors, sample manifold & PM sample inlet heads, analyzer exhaust fan filters; replaced all particulate filters in manifold; replaced pump rebuild kits (450i, 43i, 49i, 55i, 48i); rectified high pressure and low flow in 42i by cleaning sample pump head & diaphragm; zero & span calibration on all gas analyzers.", comments: "All analyzers & met sensors working fine except RH sensor (scheduled for replacement Jan 9-13, 2022). Hydrogen cylinder for 55i fuel is <500 PSI, needs ordering/refill.", status: "Completed" },
+      { item: 4, reportNo: "3227", date: "Mar 16-20, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 202200467", station: "KAUST Mobile AQMS", type: "Preventive Maintenance", engineers: "Abdulaziz / Albert G.", scope: "Cleaned & dedusted all met sensors, sample manifold, PM inlet heads, exhaust fan filters; replaced particulate filters; zero & span calibration; set up & laid RS232 cable from Met One / AutoMet 580 to System Base 8-port serial connector; configured met sensor logging from analog (0-5V) to digital (RS232).", comments: "Reconfigured logging due to intermittent rain sensor values registering even without rain.", status: "Completed" },
+      { item: 5, reportNo: "3226", date: "Mar 20, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 202200467", station: "Thermo Ambient (NO-NO2-NOx 42i)", type: "Repair", engineers: "Albert Guinto / Abdulaziz", scope: "Rectified intermittent concentration, unstable zero/span, and low/no flow; cleaned reaction chamber scale accumulation; replaced pump assembly; replaced ozonator glass switch / cleaned ozonator sample capillaries; conducted zero & span calibration.", comments: "Reaction chamber and ozonator cleaned and repaired; zero & span calibration results satisfactory.", status: "Completed" },
+      { item: 6, reportNo: "3230", date: "Apr 17-18, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo AAQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned & dedusted all met sensors, sample manifold inlet, PM heads, and exhaust fan filters; replaced all sample particulate filters in manifold; replaced compressor repair kit for N2 generator; conducted zero & span calibration on all gas analyzers.", comments: "Replaced defective aspirator fan on 2m temperature sensor. All analyzers in normal condition, calibration satisfactory.", status: "Completed" },
+      { item: 7, reportNo: "3231", date: "Apr 19-20, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer AAQMS", type: "Preventive Maintenance / Repair", engineers: "Albert Guinto / Roger Potante", scope: "Rectified high pressure alarm in sample pump and low sample flow in SO2/H2S and NO/NOx analyzers; cleared water accumulation inside SO2/NOx sample pump head; installed water trap at SO2/NOx sample pump; applied rubber insulation at O3 killer tube & aluminum block; replaced pump repair kit; sealed cable entry with duct seal.", comments: "Airpointer is back in operational condition. No alarms or signs of failure indicated.", status: "Completed" },
+      { item: 8, reportNo: "3246", date: "May 22-25, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo AAQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned sample inlet heads of all PM analyzers; cleaned & dedusted met sensors and exhaust fan filters; replaced particulate filters of sample manifold; replaced H2 fuel cylinder for Thermo FID/55i; conducted zero & span calibration; replaced filter roll of beta gauge/PM analyzer.", comments: "Station functioning properly after filter roll and cylinder replacement.", status: "Completed" },
+      { item: 9, reportNo: "3247", date: "May 22-25, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer AAQMS", type: "Preventive Maintenance / Repair", engineers: "Albert Guinto / Roger Potante", scope: "Addressed low flow alarm (NOx), lower limit warning (O3 generator flow), lower pressure alarm (O3, SO2, CO); cleaned water trap, filter & sample lines; cleaned sample pump heads & capillaries; cleaned filters and met sensors; replaced sample filter and DFU on CO analyzer; drained accumulated water inside Airpointer post-cooler.", comments: "Water drained from cooler assembly; lines cleaned and flow alarms resolved.", status: "Completed" },
+      { item: 10, reportNo: "3481", date: "July 3-7, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer AAQMS", type: "Preventive Maintenance / Repair", engineers: "Albert Guinto / Roger Potante", scope: "Checked & inspected sample flow failure on Mini GC (found broken sample pump; unplugged power to protect unit); replaced zero air adsorbents; changed SOx scrubber; replaced DFU on zero air line; performed zero & span calibrations for SO2, O3, NO/NOx, and CO; cleaned AC/HVAC filters.", comments: "Mini GC / BTEX sample pump broken, unable to calibrate Mini GC until new replacement pump is installed.", status: "Pending Parts" },
+      { item: 11, reportNo: "3480", date: "July 3-7, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo AAQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned sample manifold system (inlet line, wire mesh, glass manifold); replaced particulate filters of all gas analyzers; cleaned PM inlet system (PM10 inlet, PM1/PM2.5 cyclone cut, radiation shields, sensors); pressure cleaned AC outdoor units; cleaned all met sensors and exhaust fan filters; performed zero & span calibrations.", comments: "Preventive maintenance completed thoroughly. All analyzers calibrated.", status: "Completed" },
+      { item: 12, reportNo: "3482", date: "July 17-19, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo AAQMS & Airpointer", type: "Preventive Maintenance / Repair", engineers: "Roger Potante", scope: "Thermo AAQMS: Cleaned analyzers sample inlets, sensors, met sensors, and exhaust filters; performed zero/span calibration. Airpointer: Rectified sample pressure failure & low flow (NO, O3, SO2); replaced damaged diaphragms of sample pump due to water moisture; cleaned Peltier cooler unit and heat sink.", comments: "Airpointer pump diaphragms replaced and moisture cleared; coolers cleaned and verified.", status: "Completed" },
+      { item: 13, reportNo: "3097", date: "Aug 29 - Sep 6, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo Station (AAQMS)", type: "Preventive Maintenance", engineers: "Mildwin Cole / Roger Potante", scope: "Cleaned all met sensors & verified data; cleaned sample inlet system & ambient temp sensors for PM5014i/5028i; cleaned sample manifold inlet & replaced particulate filters; checked Met One datalogger & backup battery; cleaned exhaust fan filters; pressure-washed AC outdoor unit; zero & span calibrations; housekeeping; replaced empty H2 cylinder with new one & turned on 55i.", comments: "Met One battery backup OK. Need to order particulate filters and PM5014i ribbon filter roll.", status: "Completed" },
+      { item: 14, reportNo: "3098", date: "Aug 29 - Sep 6, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin Cole / Roger Potante", scope: "Cleaned AC/HVAC filters & HEPA filters; installed 2 DFU filters at main pump inlet; repaired/rectified Peltier cooler assembly; troubleshot SO2/H2S and NOx flow alarms; installed new sampling pump on Mini GC BTEX; checked Grimm analyzer and met sensors reading.", comments: "SO2/H2S flow sensor broken (replaced with new one, issue resolved). NOx flow sensor needs replacement. Mini GC pump stops after few seconds (suspected measurement board/circuit). CO cylinder needs refill.", status: "Pending Parts" },
+      { item: 15, reportNo: "3576", date: "Oct 31 - Nov 1, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer Station", type: "Preventive Maintenance / Repair", engineers: "Roger M. Potante", scope: "Cleaned AC/HVAC & sample HEPA filters; changed 2 DFU filters to inlet of main pump; repaired main pump & high pressure rectified; checked Grimm analyzer & met sensors reading; repaired SO2 analyzer by changing diaphragm; dedusted main unit; re-tubed leaking sample line to main pump; extended exhaust tubings to minimize noise.", comments: "NOx analyzer under maintenance. BTEX analyzer under maintenance.", status: "Pending Parts" },
+      { item: 16, reportNo: "3577", date: "Nov 2-3, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo Station", type: "Preventive Maintenance / Repair", engineers: "Roger M. Potante", scope: "Cleaned sample inlet heads of PM analyzers; cleaned & dedusted all met sensors; cleaned exhaust fan filters of all analyzers; replaced particulate filters of sample manifold; conducted zero & span calibrations of 450i, 48i, 42i, 55i, 49i; adjusted retention time of BTEX & ran several calibrations; checked aspirator motor of 2m temp sensor (found not turning); housekeeping; changed H2 cylinder & leak tested.", comments: "Need to order aspirator motor (PN: 590057, Motor 220 VAC). Air compressor needs replacement soon.", status: "Completed" },
+      { item: 17, reportNo: "3586", date: "Nov 28 - Dec 1, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467", station: "Thermo Station", type: "Preventive Maintenance", engineers: "Roger Potante", scope: "Changed coupler assembly of main pump & cleaned diaphragm; restarted 55i analyzer back to normal operation; performed hard reset on BTEX analyzer & retention time adjustment; rectified 5028i filter tape alarm by replacing tape; rectified 5014i alarms by removing dry dirt causing issue; changed particulate & fan filters; resolved sensor-to-Envidas communication; zero/span calibration; dedusted PM inlets & met sensors.", comments: "Exhaust fan changed but stopped working after 1 day (out of stock; will replace next visit). Returned old exhaust fan temporarily. Need filter tape restock.", status: "Completed" },
+      { item: 18, reportNo: "3588", date: "Nov 28 - Dec 1, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467", station: "Airpointer Station", type: "Preventive Maintenance", engineers: "Roger Potante", scope: "Changed main pump diaphragm; cleaned HVAC system filters & sample HEPA filter; checked Grimm analyzer & met sensor reading; changed defective SO2 flow sensor PCB; sealed PM inlet to eliminate leaks; removed clogging on SO2 capillaries & cleaned tubings; wiped accumulated dust on housing cover; checked all analyzers data reading.", comments: "Watermark found coming from PM inlet into SO2 flow sensor PCB main board causing corrosion. NOx analyzer under maintenance; BTEX waiting for parts.", status: "Pending Parts" },
+      { item: 19, reportNo: "3530", date: "Dec 15-18, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer Station (SN: 2019-00713)", type: "Emergency Call-Out / Repair", engineers: "Albert Guinto / Roger Potante", scope: "Emergency call-out for NOx analyzer auto-failure (PMT temp & PMT signal alarms). Replaced PMT cooler with new unit; cleaned reaction chamber.", comments: "Problem rectified. NOx analyzer back online and concentration values successfully displaying online. Customer acknowledged as emergency response.", status: "Completed" },
+      { item: 20, reportNo: "3579", date: "Dec 18, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Airpointer Station (SN: 2019-00713)", type: "Emergency Call-Out", engineers: "Albert Guinto / Roger Potante", scope: "Emergency call for Airpointer communication failure with KAUST IT network / mobile app. Diagnosed system network interface & connections; identified damaged LAN port on access point; removed defective access point & installed new AP with new LAN cable provided by IT team; restarted Linux VPN portal services from Airpointer service manager.", comments: "Communication restored with mobile application & Linux portal. Verified network connectivity. Customer expressed gratitude for rapid emergency turnaround.", status: "Completed" },
+      { item: 21, reportNo: "3581", date: "Dec 19-22, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 20220467 / PO: 4500237527", station: "Thermo AAQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Replaced damaged sample pump diaphragm of Thermo 42i NO/NOx analyzer (cleared pressure high & low flow alarms); replaced damaged exhaust fan in cylinder room; cleaned sample inlet heads of PM1, PM2.5, PM10 analyzers; cleaned & dedusted met sensors and analyzer exhaust filters; conducted zero & span calibration of all gas analyzers; conducted station spare parts inventory.", comments: "Thermo 42i alarms cleared, analyzer returned to normal operating condition. Station inventory updated.", status: "Completed" },
+      { item: 22, reportNo: "3582", date: "Dec 19-22, 2022", client: "KAUST (Thuwal)", refPO: "Ref: 2022047 / PO: 4500237527", station: "Airpointer Station (SN: 2019-00713)", type: "Preventive Maintenance", engineers: "Albert M. Guinto / Roger Potante", scope: "Replaced diaphragm of NO/NOx & SO2 sample pump head; cleaned & dedusted main unit and meteorological sensors; cleaned AC unit & filter; cleaned water trap; applied silicone sealant on top cover plate of Airpointer cabinet and sample inlet flanges; conducted spare parts inventory.", comments: "UPS battery alarm active (needs purchase & replacement). Received new Mini GC MEMS but could not install because black particles were unpacked inside the packaging.", status: "Completed" },
+      { item: 23, reportNo: "3803", date: "Mar 19, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer Station (SN: 201900713)", type: "Preventive Maintenance", engineers: "Albert M. Guinto", scope: "Cleaned & dedusted meteorological sensors; cleaned air conditioner filters; cleaned sample pump tubings; changed sample pump diaphragm of NO/NOx; cleaned sample pump head of CO/O3 modules.", comments: "Unable to rectify failure in NO/NOx & BTEX analyzer due to unavailability of spare parts. Customer signed: Hossam Albargawi.", status: "Pending Parts" },
+      { item: 24, reportNo: "3804", date: "Mar 20-21, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AAQMS", type: "Preventive Maintenance", engineers: "Albert M. Guinto", scope: "Dismantled & cleaned sample head inlets, cyclone cuts & ambient sensors of all PM analyzers; cleaned & dedusted met sensors & radiation shield; lubricated tower crank & wire cable; cleaned exhaust fan filters; changed particulate filters of all analyzers except 55i; tightened tubing connectors & cleaned ozonator flow switch for 42i low flow alarm (alarm cleared); inspected 48i AGC low intensity; identified cracked Purafil bottle for zero air.", comments: "Unable to calibrate gas analyzers due to zero air compressor failure (requires compressor rebuild kit). 48i CO IR source weak (needs replacement). Purafil container cracked/broken (needs replacement).", status: "Pending Parts" },
+      { item: 25, reportNo: "3814", date: "May 21-23, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AAQMS Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin Cole / Sadik", scope: "Replaced teflon filter of each analyzer; cleaned foam filter; cleaned & inspected met sensors, PM sample heads & manifold sample inlet; repaired air compressor by installing new rebuild kit; ran & checked BTEX internal calibration; installed new Purafil scrubber assembly; installed new IR Source to 48i; installed new H2 cylinder (2100 PSI).", comments: "42i NOx analyzer data reading is unstable. 48i CO analyzer AGC intensity still low. Air compressor drain solenoid gate valve not working. Pressure regulator working.", status: "Completed" },
+      { item: 26, reportNo: "3815", date: "May 21-23, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AAQMS Station", type: "Preventive Maintenance", engineers: "Mildwin B. Cole / Sadik", scope: "Cleaned sampling system; replaced coalescent filter; installed new pump rebuild kit for main sample pump; cleaned AC filter, housing cover, etc.", comments: "Routine monthly preventive maintenance completed successfully. Customer signed: Yazan M. Abu-Dahriya.", status: "Completed" },
+      { item: 27, reportNo: "3982", date: "Aug 21-27, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AAQMS Station", type: "Repair / Zero Air System", engineers: "Mildwin B. Cole / Albert Guinto", scope: "Thermo 48i CO: Troubleshot electrical & tubings; replaced detector assembly board and calibrated amplifier board; ran zero air supply & adjusted AGC frequency settings. Thermo 42i NOx: Troubleshot electrical & tubings; replaced input board, MIB board, ozonator assembly, and flow switch; re-calibrated input board frequency, gain & counts. Zero Air System: Checked fittings and replaced pressure regulator & solenoid valve.", comments: "Comprehensive overhaul of 48i CO and 42i NOx electronic boards and zero air supply. Signed off: Yazan Abu-Dahriya (Sep 7, 2023).", status: "Completed" },
+      { item: 28, reportNo: "3983", date: "Aug 28-29, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AAQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin Cole / Albert Guinto", scope: "Gas analyzers: Cleaned exhaust filter; performed zero & span calibrations of 42i NOx, 48i CO, 49i O3, 43i SO2, 450i SO2/H2S; checked diagnostic parameters & alarms. PM 5028i & 5014i: Cleaned inlet head, RH/Temp sensor, SS inlet pipe & detector; performed mass foil & detector calibration. Met sensors: Cleaned solar radiation, temp, RH, wind, pressure, rain gauge; checked readings. Sample system: Changed air filter, removed water moisture in tubings, cleaned inlet filter.", comments: "GC866 BTEX & 55i Methane are OFF due to nitrogen generator internal air compressor failure (no N2 supply). Thermo 450i SO2/H2S is OFF (H2S converter was removed & temporarily installed into Airpointer).", status: "Completed" },
+      { item: 29, reportNo: "3984", date: "Aug 30 - Sep 5, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer (SN: 201900713)", type: "Major Repair / Overhaul", engineers: "Albert Guinto / Mildwin Cole", scope: "Assisted in Airpointer cabinet rotation (disconnected/reconnected power & LAN); NOx: replaced comm cables, PCB interface 2 & connect mini board (problem solved); SO2/H2S: removed blocked converter/damaged solenoid, installed Moly converter taken from Thermo 450i, bypassed auto zero/span check (temp & flow alarms cleared); O3: weak lamp indication (no lamp available); CO: diagnostics show gas filter wheel and/or CO control board need replacement; Mini GC: replaced MEM board kit & EF contact board (shut-off cleared, but low sample flow due to line blockage - sent email to MLU for advice); PM Analyzer: failed self-test (pump current high alarm, pending MLU advice); Airpointer Calibrator: low flow, high concentration (requires further inspection).", comments: "Multi-module overhaul. NOx restored. SO2/H2S temporarily restored using Thermo 450i donor part. O3 lamp, CO wheel/board, Mini GC line blockage, and PM pump pending parts & manufacturer (MLU) feedback.", status: "Pending Parts" },
+      { item: 30, reportNo: "3987", date: "Sep 27, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer (SN: 201900713)", type: "Preventive Maintenance", engineers: "Albert Guinto / Mildwin Cole", scope: "Cleaned gas sample inlet, PM analyzer inlet & AC filters / side grills; replaced consumables: zero air activated charcoal, Purafil, DFU filter & extended life filter; changed diaphragms of sample pump in both heads; performed zero/span calibration: NOx (OK), SO2/H2S (OK), O3 (Zero: 2-3 ppb, Span: OK).", comments: "Regular monthly PM and consumable changeout completed. Zero/span calibration successful on active modules.", status: "Completed" },
+      { item: 31, reportNo: "3821", date: "Oct 22-24, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Remote Support", engineers: "Mildwin Cole", scope: "Cleaned AC indoor filter screen & outside cover; cleaned & checked meteorological sensors; configured laptop & Grimm PM analyzer communication for remote troubleshooting with factory engineer; installed new filter & O-ring at pre-concentrator & GC columns of BTEX analyzer; executed remote instructions from GRIMM PM analyzer engineer via MS Teams.", comments: "Remote support with factory engineer successfully executed for Grimm PM analyzer. BTEX pre-concentrator filter and O-rings refreshed.", status: "Completed" },
+      { item: 32, reportNo: "3822", date: "Oct 22-25, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin Cole / Shabbir Ali", scope: "Replaced sample teflon filter of each analyzer; cleaned & inspected met sensors, PM sample heads, and manifold sample inlet; cleaned exhaust fan foam filters; investigated PM 5014i low flow alarm; checked Envidas & Met One dataloggers; cleaned AC indoor & outdoor condenser/compressor; fixed loose wire connection on solar radiation sensor; poured water into rain gauge to test tipping bucket (1.0 mm); cleaned capillaries, tubing, and flow switch for 42i NOx ozonator low flow alarm (alarm rectified).", comments: "Preventive maintenance completed. 42i NOx ozonator alarm rectified. Calibration of Thermo gas analyzers deferred to next visit in November.", status: "Completed" },
+      { item: 33, reportNo: "3993", date: "Nov 27-28, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo & Airpointer AQMS", type: "Corrective Repair / Overhaul", engineers: "Albert Guinto / Shabbir Ali", scope: "Thermo AQMS: Removed defective compressor on Nitroxycom N2 generator and installed upgraded unit with external compressor; replaced Cell A & B detectors of 49i O3 analyzer with new ones (for test). Airpointer AQMS: Replaced CO control board, detector assembly, IR source, and filter wheel correlation; replaced UV lamp photometer of O3 module; performed calibration of CO & O3 using Thermo calibration setup/system.", comments: "Repair completed successfully. Nitroxycom N2 generator upgraded with external compressor. CO & O3 module parts replaced on Airpointer, calibration results were good.", status: "Completed" },
+      { item: 34, reportNo: "3991", date: "Nov 29-30, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance", engineers: "Albert Guinto / Shabbir Ali", scope: "Cleaned split AC 1 & 2 with blower (indoor and outdoor units); replaced particulate filters of 42i, 49i, 48i, 43i, 450i with new ones; cleaned all met sensors; lubricated steel cable & cranking system; cleaned PM analyzer inlets, sensors & cyclone cut; powered on BTEX & 55i analyzers; conducted zero & span calibration on all gas analyzers (results good); changed serial port connection of met sensors from 5 to 6 due to data interchanging.", comments: "BTEX retention time is unstable; needs further monitoring and investigation (temporarily set data to off-scan). All other gas analyzer calibrations good.", status: "Completed" },
+      { item: 35, reportNo: "3992", date: "Nov 29-30, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Training", engineers: "Albert Guinto / Shabbir Ali", scope: "Cleaned AC filters & housing; cleaned meteorological sensors; replaced diaphragm of sample pump (both heads); refilled built-in CO cylinder for CO module; provided comprehensive training to client (Yazan Abu-Dahriya) on how to remotely connect and control Thermo datalogger via AnyDesk, generate reports in Envidas software, and disable/off-scan instrument channels.", comments: "Preventive maintenance completed. Client trained on remote AnyDesk datalogger management and Envidas reporting.", status: "Completed" },
+      { item: 36, reportNo: "3926", date: "Dec 26-27, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance", engineers: "Roger Potante / Shabbir Ali", scope: "Cleaned split AC 1 & 2 indoor/outdoor blower units; cleaned and dedusted met sensors and fan filters; cleaned PM analyzer inlet sensors and cyclone cut; conducted zero & span calibration on all gas analyzers (results good); changed serial port connection from 6 to 7 to resolve PM10 reading; replaced damaged diaphragm in 43i (flow restored and issue solved).", comments: "Thermo BTEX requires further observation and manufacturer coordination; recommended to pull out and send to Al-Jubail workshop or bring next visit. Recommended to keep BTEX switched off in the meantime.", status: "Completed" },
+      { item: 37, reportNo: "3927", date: "Dec 26-27, 2023", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance", engineers: "Roger Potante / Shabbir Ali", scope: "Cleaned and dedusted AC filters/grills; cleaned met sensors and inlets; checked diaphragm of sample pump (both OK); inspected sample tubings for water accumulation; checked PM inlet for water intrusion into system cabinet that could cause corrosion; verified no active alarms in entire system.", comments: "MLU recommends sending Airpointer BTEX to factory for repair. Team can service in-house, but needs pull-out to Al-Jubail workshop for proper bench testing.", status: "Completed" },
+      { item: 38, reportNo: "3928", date: "Jan 29-30, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin Cole / Roger Potante", scope: "Replaced 4 pcs old teflon filters for analyzers; cleaned analyzer exhaust foam filters; cleaned sample manifold inlet & PM inlet head; cleaned met sensors; performed zero & span calibration; resolved intermittent met sensor communication by reconfiguring to 8017 Envidas module; tested rain gauge with 3 water tips (0.6 mm/hr); turned on computer datalogger; cleaned AC indoor/outdoor; pulled out Nitroxycom generator to Jubail facility.", comments: "Preventive maintenance done. Met sensors communication stable. Nitroxycom N2 generator pulled out to Al-Jubail workshop for bench repair.", status: "Completed" },
+      { item: 39, reportNo: "3929", date: "Jan 27-30, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Pullout", engineers: "Mildwin Cole / Roger Potante", scope: "Cleaned HVAC system & whole cabinet; cleaned met sensors & PM inlet; replaced diaphragm/motor; pulled out BTEX analyzer for shop repair; troubleshot unstable NOx and SO2/H2S data readings; checked teflon tubings and fittings.", comments: "BTEX analyzer pulled out for bench service. Main pump pressure/flow unstable (needs rectification). Old teflon tubings and fittings recommended for total replacement.", status: "Completed" },
+      { item: 40, reportNo: "3931", date: "Feb 26-27, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned exhaust foam filters, sample manifold glass & inlet tube screen; cleaned PM sample inlet head; cleaned & inspected met sensors; tested rain gauge (3 tips = 0.6 mm); performed zero & span calibrations (all gas analyzers OK); cleaned & inspected AC indoor/outdoor filters, fans, compressor & condenser; inspected analyzer flow, pressure, temp, frequency & PMT voltages; replaced 42i NOx diaphragm & cleaned capillaries (high pressure alarm cleared).", comments: "Routine PM and AC maintenance completed. 42i NOx high pressure alarm rectified. Consumables require reordering.", status: "Completed" },
+      { item: 41, reportNo: "3932", date: "Feb 26-27, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned AC filters & HVAC; cleaned met sensors; changed sample filter; cleaned 42i/sample capillaries; refilled CO cylinder; inspected teflon tubings and fittings.", comments: "SO2 requires calibration. NOx analyzer still has unstable flow & pressure. Spare parts to order: flow sensor, pressure sensor, air compressor.", status: "Pending Parts" },
+      { item: 42, reportNo: "3935", date: "May 5, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Thermo AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin Cole / Roger Potante", scope: "Cleaned analyzer exhaust filter, sample manifold glass & inlet screen; changed teflon filters; cleaned PM sample inlet head; cleaned & inspected met sensors; tested rain gauge (2 tips = 0.4 mm); performed zero & span calibrations; cleaned 42i vacuum pump & tubes (rectified high pressure and low flow alarms); cleaned AC indoor filter & outdoor compressor; tested AC units; checked analyzer parameters; replaced padlock at station tower gate.", comments: "Preventive maintenance and inspection completed. 42i NOx alarms cleared. Station padlock replaced. Remaining stock of sample teflon filters: 20 pcs.", status: "Completed" },
+      { item: 43, reportNo: "3936", date: "May 6, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202300474", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Equipment Swap", engineers: "Mildwin Cole / Roger Potante", scope: "Cleaned sample inlet filter and met sensors; inspected NOx analyzer tubings & valves; cleaned AC filters and cover; removed old Grimm PM analyzer and installed newly calibrated Grimm PM Analyzer (Model 180, S/N: 18A20054); turned on and verified data readings; checked and measured sample flow.", comments: "Grimm PM analyzer successfully swapped with newly calibrated unit (Model 180, S/N: 18A20054) and verified working fine. Airpointer NOx flow anomaly noted (flow: ozonator 100-110, NO/NOx mode 256/740 vs 1 ml setpoint; suspected board/potentiometer).", status: "Completed" },
+      { item: 44, reportNo: "3998", date: "Aug 11-12, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-QR-00", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned meteorological sensors; checked sample filter; fixed main vacuum pump; installed new Air Condition module unit; powered ON the Airpointer system (was previously OFF due to AC unit failure); checked CO and NOx module parts.", comments: "New AC unit cooling properly; Airpointer system restored to normal operation. CO and NOx show alarm for motor RPM and intermittent flow/pressure; defective parts noted for order. Client signed: Yazan Abu-Dahriya (Aug 12, 2024).", status: "Completed" },
+      { item: 45, reportNo: "3997", date: "Aug 11-12, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-QR-00", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned exhaust foam filters, sample manifold glass & inlet tube; removed water moisture inside sample teflon tube; replaced 4 pcs sample filters; cleaned PM inlet head, RH/Temp sensor & met sensors; performed zero & span calibrations; replaced vacuum pump diaphragm & cleaned capillaries; fixed ozonator flow switch; cleaned 2 indoor & outdoor AC units; adjusted pre-amp and AGC intensity.", comments: "PM and inspection completed. Zero/span calibration response OK. 42i NOx alarms rectified. 48i CO analyzer working fine. Note: Two UPS units indicate battery failure and require replacement.", status: "Completed" },
+      { item: 46, reportNo: "4151", date: "Sep 15-16, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned exhaust foam filter, manifold glass & inlet tube; removed water inside sample teflon tube; replaced 3 pcs sample filters; cleaned PM inlet head & met sensors; performed zero & span calibration of gas analyzers; calibrated PM analyzer; cleaned capillaries, reaction chamber & vacuum pump of 42i NOx; replaced diaphragm of 49i O3, cleaned absorption tube & detector; cleaned AC indoor/outdoor filters & condenser.", comments: "PM and calibrations OK. 42i NOx alarms rectified. 49i O3 stable and working fine. Stock note: 8 pcs of sample filter available in station inventory. Client signed: Yazan Abu Dahriya (Sep 16, 2024).", status: "Completed" },
+      { item: 47, reportNo: "4152", date: "Sep 15-16, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned analyzer & met sensors; checked sample filter; checked CO stepper motor (not rotating, measured 11.8V output; disconnected chopper motor cable to prevent overheating); checked NOx pressure/flow and gate valve; cleaned AC filter; stored repaired AC unit, old Grimm PM analyzer, and Airpointer BTEX in Thermo station; H2S, SO2, O3 not calibrated as calibrator is under repair.", comments: "CO stepper motor requires replacement for isolation. NOx pressure/flow sensor & gate valve require replacement. Calibrator under repair. Repaired AC and old equipment stored in Thermo station.", status: "Pending Parts" },
+      { item: 48, reportNo: "4168", date: "Oct 13-14, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned PM inlet heads (PM1, PM2.5, PM10), AC compressors, met sensors & analyzer exhaust fan filters; addressed 42i NOx chamber pressure high & low flow alarms by replacing worn-out sample pump diaphragm with used unit (errors cleared, flow/pressure normalized); conducted zero & span calibrations of all working gas analyzers.", comments: "42i NOx pump diaphragm replaced with used unit (functioning, but requires new replacement diaphragm). Zero & span calibration successful. Client signed: Yazan Abu Dahriya (Oct 14, 2024).", status: "Completed" },
+      { item: 49, reportNo: "4169", date: "Oct 13-14, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned AC grills & filters, met sensors & gas sample inlet; addressed sample pump high pressure alarm by changing pump from used unit and installing new diaphragms on both heads; investigated low HV PS SO2 & low sample flow (suspected leak or defective sensor interface board).", comments: "O3 & PM modules working fine. Sample pump pressure cleared. NO/NOx and CO modules awaiting spare parts. Investigating SO2 high voltage power supply issue.", status: "Pending Parts" },
+      { item: 50, reportNo: "4155", date: "Nov 18-20, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Roger Potante / Shabbir Alam", scope: "Cleaned all PM inlet heads (PM1, PM2.5, PM10); dusted AC compressor & met sensors; cleaned exhaust fan filters; rectified 42i NOx chamber high pressure & ozone low alarm by cleaning diaphragm (requires new replacement); conducted zero & span calibrations of all working gas analyzers; housekeeping.", comments: "42i NOx alarms cleared temporarily; new diaphragm required. Calibrations completed. Client comment: Yazan requested checking Airpointer O3 readings (showing no readings).", status: "Completed" },
+      { item: 51, reportNo: "4156", date: "Nov 18-19, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance", engineers: "Roger Potante / Shabbir Alam", scope: "Cleaned AC filters, met sensors & sample inlet; cleaned & checked main pump; inspected low HV PS SO2 & low sample flow (suspected leak in system & defective sensor interface board).", comments: "O3 and PM modules working fine. NO/NOx and CO modules awaiting spare parts. Client comment: Yazan requested checking O3 readings and advising on needed spare parts.", status: "Pending Parts" },
+      { item: 52, reportNo: "4158", date: "Dec 15-16, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Albert Guinto / Roger Potante", scope: "Addressed low ozonator flow & high cooler temp alarms on 42i NOx: removed, cleaned & re-installed ozonator flow switch (cleared alarm); reconnected cooler cable firmly (cleared alarm); cleaned PM inlet heads, met sensors, exhaust fan filters & AC compressor; replaced particulate filters of 48i, 42i, 49i, 43i; conducted zero & span calibrations; performed functionality test with rain sensor.", comments: "Minor sound noted with zero air compressor (recommended to change rebuild kit). No more particulate filters in stock for analyzers. Client comment: Send needed spare parts list via email.", status: "Completed" },
+      { item: 53, reportNo: "4159", date: "Dec 15-16, 2024", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Door Lock", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned AC grills & filters, met sensors & gas sample inlet; rectified SO2/H2S communication failure by installing old/used PCB sensor interface (communication restored); investigated Cell B high flow alarm on O3 (suspected defective flow sensor, email sent to manufacturer); changed station door lock with new one.", comments: "SO2/H2S communication solved using replacement interface board. O3 Cell B high flow under investigation with manufacturer. NO/NOx and CO modules awaiting PO approval. Mini GC/BTEX parts list previously handed to Engr. Yazan.", status: "Completed" },
+      { item: 54, reportNo: "4161", date: "Jan 14-15, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / UPS Safety Bypass", engineers: "Albert M. Guinto / Roger Potante", scope: "Cleaned PM inlet heads (PM1, PM2.5, PM10), met sensors, exhaust fan filters & AC outdoor unit; performed zero & span calibrations of 450i, 49i, 43i, 48i; investigated 42i high cooler temp alarm (need PMT cooler assembly); addressed UPS 2 continuous beeping due to severe battery degradation (excessive heat, expanded battery casing, leaking particles): unplugged wiring of all batteries in UPS 1 & 2, removed UPS power supply, installed bypass electrical cable from wall outlet to JB boxes.", comments: "Emergency electrical bypass executed: UPS batteries disconnected due to bulging/leaking danger; station power wired direct to mains via JB. 42i NOx PMT cooler assembly needed. Met One datalogger battery backup requires replacement.", status: "Completed" },
+      { item: 55, reportNo: "4171", date: "Jan 14-15, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Diagnostics", engineers: "Albert Guinto / Roger Potante", scope: "Cleaned met sensors, AC grills & filters; diagnosed O3 module failure (alarm high flow on Cell B): interchanged flow sensors between Cell A & Cell B, which moved the high flow alarm to Cell A, confirming defective flow sensor.", comments: "O3 flow sensor defect conclusively confirmed via sensor swap. NO-NOx and CO modules awaiting spare parts (PO issued Dec 24, 2024). Client signed: Yazan Abu Dahriya.", status: "Pending Parts" },
+      { item: 56, reportNo: "4326", date: "Feb 25-26, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Thermo AQMS Station", type: "Preventive Maintenance / Start-up / Cal", engineers: "Mildwin Cole / Roger M. Potante", scope: "Cleaned analyzer exhaust foam filters, sample manifold glass & inlet tube, PM inlet head, met sensors & datalogger; replaced sample filters of O3, SO2, CO, PM5014i/5028i; tested rain gauge (10 tips = 0.4 mm); performed zero & span calibrations of SO2, O3, CO, CH4; ran internal calibration on BTEX; installed and tested 12 pcs batteries on 2 UPS units (UPS back in service); replaced diaphragm of 43i SO2 pump (flow restored); aligned mirror & adjusted pre-amp gain/frequency on 48i CO (AGC alarm fixed); started up 55i Methane analyzer.", comments: "UPS restored with 12 new batteries. BTEX and 55i Methane running fine. 43i SO2 flow fixed. 48i CO AGC alarm fixed. Zero air compressor replacement recommended. 42i NOx PMT cooler high temp requires cooler assembly replacement. Vacuum pump diaphragm required (P/N: 108007-00).", status: "Completed" },
+      { item: 57, reportNo: "4327", date: "Feb 25-26, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202401590-2416S", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned & inspected analyzer and met sensors; cleaned AC filter & screen; verified sample pump pressure is OK; investigated O3 analyzer high flow alarm (checked flow with flowmeter & connection; possible defect in flow sensor and sensor board); checked PM analyzer (no active alarms).", comments: "Routine PM done. Sample pump pressure normal. PM analyzer working fine. O3 high flow confirmed on sensor/board. NOx and CO modules awaiting spare parts shipment.", status: "Pending Parts" },
+      { item: 58, reportNo: "4514", date: "Sep 1, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923 (Sheet 1 of 3)", station: "Airpointer (SN: 201900713)", type: "Preventive Maintenance / Corrective Repair", engineers: "Albert Guinto / Roger Potante", scope: "Investigated alarms: NOx/NO/NO2 (reaction cell temp, Moly temp, PM temp, PMT auto signal, permeation temp, reaction cell press, NOx flow, O3 gen flow fail), CO (scrubber temp warning), O3 sensor (photo out meas B & ref B warning, sample press pump fail). Replaced/changed pressure sensor of sample pump (all temp controllers automatically re-activated and backed to normal); reset O3 module (photo alarm cleared); cleaned all capillaries; cleaned AC unit filters & wire mesh; cleaned met sensors & sample inlets (gas & PM).", comments: "Sample pump pressure sensor replaced, clearing temperature controller shutdown. O3 module reset and photometer alarms cleared. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 59, reportNo: "4515", date: "Sep 1, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923 (Sheet 2 of 3)", station: "Airpointer (SN: 201900713)", type: "Preventive Maintenance / Diagnostics", engineers: "Albert Guinto / Roger Potante", scope: "SO2/H2S Module: Bench temp, Moly temp, permeation temp & flow failed (all failures cleared, but SO2 flow remains unstable due to flow sensor failure; recommended to replace). Mini GC: Sample flow failed, sensor flow failed, sample temp warning (all cleared; repositioned capillary back to original location). Grimm EDM 180 PM Analyzer: Dust filter & air passage warning.", comments: "SO2 flow sensor failure identified (replacement recommended). Mini GC failures resolved by capillary relocation. Grimm EDM 180 recommended to send to OEM for annual calibration. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 60, reportNo: "4516", date: "Sep 2, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923 (Sheet 3 of 3)", station: "Thermo Mobile AQMS", type: "Preventive Maintenance / Calibration", engineers: "Albert M. Guinto / Roger Potante", scope: "Thermo 42i NO/NO2/NOx low flow alarm: cleaned sample pump head & diaphragm. Changed all sample particulate filters of gas analyzers except Chromatotec BTEX; drained and flushed water condensations; cleaned all met sensors, gas sample inlet & PM inlets; dedusted analyzers and station/shelter; conducted zero & span calibrations on all gas analyzers.", comments: "42i low flow alarm cleared after pump head cleaning. All gas analyzers successfully calibrated. Condensation drained. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 61, reportNo: "4580", date: "Oct 27-28, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo AQMS Station", type: "Preventive Maintenance", engineers: "Albert Guinto / Shabbir Alam", scope: "Thermo 55i Methane/Non-Methane flame out: empty H2 cylinder (turned off analyzer and disconnected cylinder). Thermo 5014i alarms (low pressure, low flow, filter tape change fail): found cut/broken filter tape, reconnected tape, reset analyzer (all alarms cleared, back to normal operating conditions). Changed sample particulate filters of O3, CO, NO/NO2/NOx analyzers; cleaned PM1, PM2.5, PM10 sample inlets & gas manifold; cleaned exhaust fan filters & met sensors; conducted rain sensor functional test.", comments: "5014i filter tape repaired and normal operation restored. 55i powered off awaiting new H2 cylinder delivery. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 62, reportNo: "4581", date: "Oct 27-28, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Albert Guinto / Shabbir Alam", scope: "Chromatototec BTEX (no peak detected, base sensitivity out of range): changed sample carbon trap (under warranty), conducted internal calibration, cleaned PID lamp (calibration results good, base sensitivity within allowable range). Performed zero & span calibration of all gas analyzers. Cleaned met sensors, AC grills & filters; checked pump diaphragms in both heads; addressed low alarm warning of photo detectors frequency on O3 analyzer (cleaned photo detector; unable to fully clear alarm - recommended to dismantle complete optical bench assembly to clean reflective mirrors & filters).", comments: "Chromatotec BTEX restored under warranty with new carbon trap. O3 analyzer optical bench assembly requires full dismantle and mirror cleaning. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 63, reportNo: "4583", date: "Nov 26-27, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923 (Sheet 1 of 2)", station: "Airpointer AQMS Station", type: "Preventive Maintenance", engineers: "Albert Guinto / Shabbir Alam", scope: "NO/NOx module fail alarm of reaction cell pressure (high), low fail alarm of O3 generator, and high pressure alarm of sample pump: changed connectors of NO/NOx & SO2/H2S sample lines; changed sample pump rebuild kit (diaphragm) in both heads (all alarms cleared). Grimm PM analyzer: failed self-test with error 'air pump problem current too high' and loud unusual sound from internal pump (need to send to OEM for repair & calibration; no spare parts available). Performed zero & span calibration of CO & NO/NOx; unable to calibrate SO2/H2S due to slow response with span gas.", comments: "Sample pump overhauled with new rebuild kit, clearing NOx and pump pressure alarms. Grimm PM internal pump failed (requires OEM return). SO2/H2S span response sluggish. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 64, reportNo: "4584", date: "Nov 26-27, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923 (Sheet 2 of 2)", station: "Thermo & Airpointer AQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Shabbir Alam", scope: "Airpointer: Cleaned AC grills, filters & met sensors; changed sample filter & extended life filter; noted need to clean reflective mirrors & optical bench; unable to calibrate O3 due to low O3 generation of Airpointer calibrator (to coordinate with MLU for possible cause & repair). Thermo AQMS: Cleaned met sensors; changed & installed new H2 cylinder for 55i Methane/Non-Methane analyzer and turned it on; changed sample filters of CO, SO2/H2S & NOx analyzers; unable to calibrate analyzers because station was actively online with KAUST AQI UI.", comments: "55i Methane restored with new H2 cylinder. Airpointer calibrator low O3 output referred to MLU Austria. Airpointer O3 optical bench needs cleaning. Thermo calibration deferred due to live KAUST AQI reporting.", status: "Completed" },
+      { item: 65, reportNo: "4590", date: "Dec 30, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer AQMS", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante", scope: "O3 Analyzer: Cleaned mirrors assembly, photocells A & B, measurement assembly (low intensity / photo out measurement & reference; frequency improved but detectors need replacement). Grimm PM Analyzer: Installed newly calibrated unit from company; kept other unit for calibration in Thermo station. SO2/H2S Analyzer: Replaced pressure sensor with new one (cleared high pressure alarm). Cleaned met sensors & AC grills.", comments: "O3 analyzer frequency improved, but detectors require replacement. Grimm freshly calibrated unit installed. SO2 pressure sensor replaced successfully. Client signed: M. Sohail Chaudhary.", status: "Completed" },
+      { item: 66, reportNo: "4591", date: "Dec 31, 2025", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo AQMS Station", type: "Preventive Maintenance / Loan Unit", engineers: "Albert Guinto / Roger Potante", scope: "Replaced sample filters of all gas analyzers; cleaned AC unit filters & outdoor units; cleaned exhaust fan filters of all analyzers; installed Thermo 5028i loan unit and re-configured datalogger to original configuration; cleaned all met sensors & inlets; performed zero & span calibrations of all gas analyzers.", comments: "Thermo 5028i pulled out to be shipped to Al-Jubail workshop for repair. Loan unit installed and operating. Calibrations completed. Client signed: M. Sohail.", status: "Completed" },
+      { item: 67, reportNo: "4597", date: "Jan 28-29, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Changed sample filters of BTEX, 43i, 450i, CH4, 49i, 48i; cleaned sample manifold system, fan foam filters, and met sensors; fixed cable connection of 42i heater & temperature sensor (rectified 42i chamber temp hot alarm); fixed Thermo 146i calibrator keypad button; installed repaired Thermo 5028i PM analyzer, replaced 2 heater inlet tubes & cleaned PM inlet head sensor; performed zero & span calibrations; cleaned indoor filters inside shelter; cleaned vacuum pump, replaced pump & power receptacle for 5028i.", comments: "42i heater connection fixed, alarm cleared. 146i keypad button working. Repaired Thermo 5028i re-installed and running fine. Gas calibrations within acceptable limits. Client signed: M. Sohail Chaudhary.", status: "Completed" },
+      { item: 68, reportNo: "4598", date: "Jan 28-29, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned analyzer cabinet, inlet, and meteorological sensor; checked analyzer parameters; troubleshot & reconnected data communication cable of sensor interface board for SO2/H2S (alarm fixed); adjusted offset value & background for CO analyzer (offset OK); measured temperature sensor of CO scrubber (temperature sensor of CO scrubber needs replacement); cleaned filter screen & hood unit of AC.", comments: "SO2/H2S communication restored. CO offset adjusted. CO scrubber temperature sensor requires replacement. Client signed: M. Sohail Chaudhary.", status: "Completed" },
+      { item: 69, reportNo: "4522", date: "Feb 25-26, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned analyzer and met sensor; inspected Grimm PM analyzer; checked tubings & connection of NOx analyzer (flow low alarm rectified); cleaned capillary of SO2/H2S (flow alarm rectified); replaced diaphragm and flapper valve of sample main pump (high pressure alarm rectified); cleaned AC screen & guard; powered OFF and ON Airpointer system to clear communication glitch.", comments: "All flow and pressure alarms rectified (NOx, SO2, sample pump). Airconditioner working fine. Airpointer communication restored. Client signed: Muhammad Sohail.", status: "Completed" },
+      { item: 70, reportNo: "4864", date: "Mar 30-31, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned analyzer, met sensors, and sample main filter; inspected Grimm PM analyzer; measured voltage of NOx Moly converter heater (220V present, but heater filament resistance is open; requires replacement); cleaned AC screen and outdoor guard; cleaned AP cabinet & platform; calibrated zero and span of SO2 & CO analyzers.", comments: "NOx Moly converter heater filament open (needs replacement). AC cooling fine. CO calibration OK but data reading is unstable (parts needed to replace). Client signed: Dr. Mohamed Omar.", status: "Pending Parts" },
+      { item: 71, reportNo: "4865", date: "Mar 30-31, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned sample inlet, manifold glass, inlet & met sensors; compared data values to Envidas datalogger; installed new hydrogen cylinder for fuel supply of Thermo 55i Methane/Non-Methane analyzer (flame lit successfully); performed zero & span calibrations; cleaned AC indoor screen filter, outdoor unit & inside shelter.", comments: "55i Methane flame lit and running after new H2 cylinder install. Zero/span calibration completed. AC 1 & 2 cooling fine. BTEX requires maintenance inquiry to Chromatotec factory. PM10 value mismatch on datalogger reading noted. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 72, reportNo: "4866", date: "Apr 26-27, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Cleaned sample inlet, PM inlet & met sensors; compared readings to Envidas; cleaned manifold glass & Teflon tubings; performed zero & span calibrations of gas analyzers; inspected cylinder gas pressures; cleaned aircon filter & verified AC2 backup cooling; cleaned shelter inside/outside; checked Carbotrap & PID parts of GC866 BTEX; performed zero & span foil calibration of PM2.5/10 (PM2.5: -0.7%, PM10: 1.2%).", comments: "PM2.5/10 calibration results: PM2.5 -0.7%, PM10 1.2%. Zero & span calibration OK. Nitrogen generator filter needs replacement. Some BTEX parts require replacement. Client signed: M. Sohail.", status: "Completed" },
+      { item: 73, reportNo: "4867", date: "Apr 26-27, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer AQMS Station", type: "Preventive Maintenance / Inspection", engineers: "Mildwin B. Cole / Roger M. Potante", scope: "Inspected & cleaned analyzer and met sensors; checked pressure of main sample pump (30 psi); disassembled PM inlet pipe and cleaned (PM reading restored to normal); measured voltage supply of NOx converter heater & verified heater filament is open; measured CO IR source resistance (152 ohms; IR source needs replacement); checked pressure & measured flow of BTEX; cleaned AC indoor filter & outdoor hood; cleaned AP cabinet & platform.", comments: "PM reading restored. NOx Moly converter heater filament open (waiting for spare parts). CO IR source defective (needs replacement). BTEX waiting for spare parts. AC OK. Client signed: M. Sohail.", status: "Pending Parts" },
+      { item: 74, reportNo: "4854", date: "May 14, 2026", client: "KAUST (Thuwal)", refPO: "Ref: KAUST Service", station: "Thermo 5028i PM Analyzer", type: "Corrective Repair / Calibration", engineers: "Naveen Kumar", scope: "Heater does not heat up for PM10 and PM2.5 sample line: replaced Thermo 5028i PM analyzer sample tube heater; performed zero and span calibration.", comments: "5028i sample tube heater replaced successfully. Zero and span calibration completed. Client signed: Dr. Mohamed Omar.", status: "Completed" },
+      { item: 75, reportNo: "4852", date: "May 11, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 2024/1590/24165", station: "Thermo AQMS Station", type: "Preventive Maintenance", engineers: "Albert Guinto / Roger Potante / Naveen Kumar", scope: "Changed sample filters of 450i/SO2-H2S, 43i/SO2, 49i/O3, 42i/NO-NO2-NOx, 55i/Methane-Non Methane, and CO analyzers; cleaned exhaust fan filters of all analyzers; cleaned PM-head inlets; verified meteorological sensors; investigated Chromatotec BTEX analyzer yearly maintenance alert and Nitroxycom N2 generator system error.", comments: "Chromatotec BTEX showed yearly maintenance indication; sample trap carbon loss observed due to poor-quality N2 carrier gas from N2 generator. OEM recommends sending both BTEX analyzer & N2 generator to Al-Jubail / factory for investigation and repair. Client signed: M. Sohail.", status: "Completed" },
+      { item: 76, reportNo: "4853", date: "May 11-12, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 2024/1590/24165", station: "Thermo & Airpointer AQMS", type: "Preventive Maintenance / Calibration", engineers: "Albert Guinto / Roger Potante / Naveen Kumar", scope: "Thermo 5028i PM10/PM2.5: Filter tape change fail on both detector heads due to cut filter; high sample RH alarms on both inlets due to defective heaters (both heaters need replacement); performed zero & span calibrations of all Thermo gas analyzers. Airpointer AQMS: Performed routine cleaning and maintenance of sample inlets, met sensors, and AC grills/filters; upgraded software version to latest release; awaiting spare parts for CO & O3 repair.", comments: "Thermo 5028i heaters defective and filter tape cut (heaters need replacement). All Thermo gas analyzers calibrated. Airpointer software upgraded to latest release; waiting for CO & O3 repair parts. Client signed: M. Sohail.", status: "Completed" },
+      { item: 77, reportNo: "4870", date: "June 21-22, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo AQMS Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned sample inlet, manifold glass, inlet & met sensors; compared data to datalogger; installed new hydrogen cylinder; installed new rain hood at sample inlet; 55i methane flame lit successfully; zero and span calibration completed; 450i SO2 vacuum pump found defective; ran detector check on PM2.5/10; installed and configured PM5028i service unit from Al-Sinan for troubleshooting; installed new thermostat, RH & 2m/10m temp sensors.", comments: "PM5028i service unit installed from Al-Sinan. 450i SO2 vacuum pump defective (needs replacement). 55i CH4 flame lit. New rain hood and meteorological temp/RH sensors installed. Client signed: M. Sohail.", status: "Completed" },
+      { item: 78, reportNo: "4871", date: "June 23, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Overhaul", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned & inspected analyzer and cabinet; replaced IR source of CO analyzer; replaced O3 UV lamp; replaced extended life sample filter; replaced vacuum pump diaphragm of main pump (rectified high pressure alarm); checked AC; cleaned platform; checked CO flow sensor.", comments: "CO IR source and O3 UV lamp replaced. Main pump high pressure cleared with new diaphragm. CO flow sensor needs replacement. Grimm PM recommended to send to factory. Client signed: M. Sohail.", status: "Completed" },
+      { item: 79, reportNo: "4874", date: "July 20, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Equipment Pullout", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned analyzer, tubings, and cabinet; checked CO analyzer intermittent high flow alarm (requires flow sensor replacement, requested quotation to sales); installed flow sensor on NOx analyzer (awaiting ordered converter parts); assisted Grimm PM engineer for diagnostics (dryer alarm & low reading); cleaned AC filter; pulled out Grimm PM (S/N: 18A20254) and sent to factory for calibration/repair (high current alarm noted).", comments: "Grimm PM S/N: 18A20254 pulled out and sent to factory. CO flow sensor quotation requested. NOx converter parts pending. Client signed: M. Sohail.", status: "Completed" },
+      { item: 80, reportNo: "4875", date: "July 21, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo Station", type: "Preventive Maintenance / Repair", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned sample manifold glass, sensor & analyzer; adjusted window timing and replaced vacuum pump diaphragm on 55i methane analyzer; replaced diaphragm on zero air compressor (working fine, pressure restored); cleaned & inspected AC1 & AC2; installed vacuum pump on 450i SO2 analyzer (working fine); 43i SO2 is OFF awaiting parts; replaced sample filter.", comments: "Zero air compressor restored with new diaphragm. 450i SO2 pump installed and working. 55i CH4 vacuum diaphragm replaced (rotor replacement noted). 43i SO2 OFF awaiting parts. Client signed: M. Sohail.", status: "Completed" },
+      { item: 81, reportNo: "5013", date: "Aug 26-27, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned sample inlet head, PM inlet head, meteorological sensors & manifold glass; replaced filter ribbon & NOx/450i/5028i sample filters; inspected Met One datalogger & analyzer; cleaned optical bench tube & detectors of 49i O3 (sudden high/low values); cleaned AC filter; ran AC2 for testing; performed zero & span calibrations.", comments: "Zero & span calibration of gas analyzers completed. 55i CH4/NM has no peak (spare parts ordered). 43i SO2 is OFF waiting for vacuum pump (ordered). UV lamp for 49i O3 needs replacement. Client signed: M. Sohail.", status: "Completed" },
+      { item: 82, reportNo: "5014", date: "Aug 26-27, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned analyzer, inside & outside cabinet; inspected tubings & analyzer; cleaned AC filter, hood & screen; changed Purafil, charcoal, DFU filter; performed zero calibration of O3, SO2, H2S.", comments: "NOx & CO spare parts already ordered. BTEX analyzer spare parts already ordered. Grimm PM analyzer has alarm (checked & recommended to send to factory). Client signed: M. Sohail.", status: "Completed" },
+      { item: 83, reportNo: "5015", date: "Sept 27-28, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Thermo Station", type: "Preventive Maintenance / Calibration", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned sample inlet head, manifold glass, met sensors; changed sample filter & 55i CH4/NM analyzer filter; inspected datalogger & analyzer readings; performed zero & span calibrations; rain gauge tested with 2 tips (0.40 mm); installed new air filter for air compressor; checked 450i H2S/SO2 lamp intensity (sometimes >100%); cleaned AC filter; installed new hydrogen gas cylinder & performed tubing leak test.", comments: "PM & calibrations completed. 450i H2S/SO2 UV lamp source requires replacement due to age of service. Need to order filter ribbon roll. Client signed: M. Sohail.", status: "Completed" },
+      { item: 84, reportNo: "5016", date: "Sept 27-28, 2026", client: "KAUST (Thuwal)", refPO: "Ref: 202502923", station: "Airpointer Station", type: "Preventive Maintenance / Installation", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Cleaned analyzer inside & outside cabinet; inspected tubings & analyzers; installed new Moly converter & powered ON; fixed tubing connection; cleaned AC filter, hood, screen, rain guard; cleaned platform shelter.", comments: "New Moly converter installed; NOx analyzer still has alarm and converter temperature is increasing. Client signed: M. Sohail.", status: "Pending Parts" },
+      { item: 85, reportNo: "4586", date: "Nov 30 - Dec 3, 2025", client: "SAMREF (Yanbu)", refPO: "Ref: 202404659 / PO: 450013762", station: "Air Quality Fence Monitoring (233-AB-003/004)", type: "Preventive Maintenance", engineers: "Albert M. Guinto / Shabbir Alam", scope: "Cleaned sample hood, inlet wire mesh, glass manifold & exhaust fan filters; swept floors & dedusted analyzers/devices; replaced particulate filters of both Thermo 450i SO2/H2S analyzers; cleaned PID lamp of both BTEX analyzers; conducted zero & span calibration of both Thermo 450i; initiated auto calibration of BTEX; conducted verification of BTEX using external cylinder.", comments: "All maintenance and calibrations completed on both fence monitoring stations (233-AB-003 & 233-AB-004). Client signed: Mousa Almalki.", status: "Completed" },
+      { item: 86, reportNo: "4592", date: "Jan 4-5, 2026", client: "SAMREF (Yanbu)", refPO: "Ref: 202404659 / PO: 450013762", station: "Air Quality Fence Monitoring (233-AB-003/004)", type: "Preventive Maintenance / Calibration", engineers: "Roger Potante", scope: "Cleaned sample inlet, manifold glass & exhaust fan; replaced particulate filter of Thermo SO2/H2S; conducted zero & span calibration on Thermo 450i (3 points); cleaned PID lamp of BTEX (base sensitivity increased); replaced defective O2 sensors (cleared alarm); housekeeping & sweeping floor; checked EnviDAS viewer (readings match).", comments: "All activities successfully executed on both stations (233-AB-003 & 233-AB-004). O2 sensor replaced and alarm cleared. Client signed: Odai Alansari.", status: "Completed" },
+      { item: 87, reportNo: "4600", date: "Feb 16, 2026", client: "ETLCO (Jubail)", refPO: "Ref: 202600611", station: "Thermo 51i-HT (Stack Monitoring, SN: 1150796083)", type: "Corrective / Diagnostic Inspection", engineers: "Albert Guinto", scope: "Investigated alarms: heater fail & ignition failed. Conducted diagnostic testing of 51i-HT analyzer; determined MIB (Measurement Interface Board) is defective and requires replacement; recommended comprehensive preventive maintenance and replacement of basic consumable parts given analyzer age.", comments: "MIB board replacement required. Recommended ordering basic maintenance parts and consumables. Contact: Eric Agcaoili.", status: "Pending Parts" },
+      { item: 88, reportNo: "4525", date: "Mar 8-9, 2026", client: "SAMREF (Yanbu)", refPO: "Ref: 202404659", station: "AQMS #002 / #003", type: "Preventive Maintenance (PPM)", engineers: "Roger M. Potante", scope: "Thermo 450i: Addressed low sample flow on station 002; dedusted manifold system (both); replaced diaphragm of 450i (002); cleaned PID lamp (both); conducted zero & span calibration on 450i (both); changed sample filters on 450i (both); checked EnviDAS communication (both); housekeeping. Chromatotec BTEX: Low base sensitivity resolved (002: 7k -> 21,079.24; 003: 11k -> 25,715.38).", comments: "450i sample flow restored after diaphragm replacement on Station 002. BTEX base sensitivity significantly improved on both stations. Client signed: Odai.", status: "Completed" },
+      { item: 89, reportNo: "4873", date: "June 28 - July 2, 2026", client: "MA'ADEN ENVIRONMENTAL (Riyadh)", refPO: "Ref: 202601664", station: "Ambient AQMS Station", type: "Preventive Maintenance / Repair / Cal", engineers: "Mildwin B. Cole / Albert Guinto", scope: "Cleaned sample inlet head, PM inlet head, manifold glass, filter & exhaust fan; repaired 17i NH3 low reading; cleaned 42i NOx capillaries & flow switch; cleaned PID BTEX lamp; aligned rain gauge tipping bucket; cleared heat sensor & calibrated high voltage of 17i; conducted zero & span calibration of each analyzer; cleaned PM 5028i head & cabinet.", comments: "PM & calibrations completed. PM5028i, BTEX (base sensitivity 35,619.5 to 59.4), and rain gauge working fine. 48i CO and other parts not installed (pending shipment). Client signed: Engr. Anas Baralama / Mohamed Osman.", status: "Completed" },
+      { item: 90, reportNo: "5003", date: "July 22-26, 2026", client: "Methan / Mobile Station", refPO: "Ref: 202602490", station: "Mobile Station (AQMS)", type: "Preventive Maintenance / Repair / Cal", engineers: "Roger Potante", scope: "Temporarily fixed damaged sample hood inlet; replaced bended PM2.5 SS sample inlet with new one; fixed intermittent low pressure alarm on Thermo 450i by tightening cable connection; dismantled & cleaned gas sample inlet & met sensors; cleaned Purafil/charcoal zero air generator; changed ozonator dry air desiccant (17i); fixed damaged connection of sample temp & RH sensor (5028i); conducted mass flow calibration (5028i); cleaned BTEX PID lamp & internal calibration; zero & span calibration on all gas analyzers.", comments: "Station maintenance & calibrations completed. Separate quotation to be provided for replacement sample hood inlet and spare parts. Client signed: Eng. Abubker Adem.", status: "Completed" },
+      { item: 91, reportNo: "4856", date: "Aug 2-3, 2026", client: "YUNIGREEN (Yanbu)", refPO: "Ref: 202600497 / PO: 261200595-", station: "YUNIGREEN AQMS (BTEX & THC)", type: "Preventive Maintenance / Inspection", engineers: "Naveen Kumar", scope: "Cleaned sample inlet hood & wire mesh filter; inspected sample manifold & filter (found clean); inspected both AC filters (found clean); cleaned all analyzers inside & outside; performed BTEX and THC linearity test; inspected zero air Purafil & charcoal (found OK).", comments: "Preventive maintenance and inspection completed. No error messages present. BTEX and THC analyzers operating in normal condition. Client signed: Abdul Rab.", status: "Completed" },
+      { item: 92, reportNo: "4872", date: "June 24-25, 2026", client: "YUNIGREEN (Yanbu)", refPO: "Ref: 202504089-25560 / PO: 251200952", station: "Ambient Air Quality Fence Monitoring", type: "Commissioning / SAT / Training", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Commissioning of fence monitoring station; Site Acceptance Test (SAT); installed sample manifold system; checked gas cylinder pressures; powered ON station and started up all equipment; performed zero & span calibration of THC and BTEX analyzers (5-point linearity test); conducted actual user operation & maintenance training.", comments: "Commissioning and SAT successfully completed. All equipment and analyzers working fine. 146i calibrator verified OK. Client signed: Abdul Rab.", status: "Completed" }
+    ];
+
+    // ==========================================
+    // INITIALIZE 43 PENDING ACTION ITEMS
+    // ==========================================
+    const DEFAULT_ACTION_ITEMS = [
+      { reportNo: "3200", station: "AQMS 42i", category: "Parts", observation: "Vacuum pump rebuild kit & diaphragm", action: "Procure rebuild kit for vacuum pump", engineers: "Mildwin Cole" },
+      { reportNo: "3588", station: "Airpointer", category: "Water Damage / Parts", observation: "Watermark from PM inlet causing SO2 PCB corrosion", action: "Waterproofing PM inlet / check PCB integrity", engineers: "Roger Potante" },
+      { reportNo: "3582", station: "Airpointer", category: "Defective Consumable", observation: "New Mini GC MEMS received with black particles inside", action: "Request RMA / replacement MEMS from supplier", engineers: "Albert M. Guinto / Roger Potante" },
+      { reportNo: "3983", station: "Thermo Station", category: "Cannibalized Part", observation: "Thermo 450i SO2/H2S converter transferred to Airpointer", action: "Re-order/procure separate Moly converter for 450i", engineers: "Mildwin Cole / Albert Guinto" },
+      { reportNo: "3928", station: "Thermo Station", category: "Equipment Pullout", observation: "Nitroxycom N2 Generator pulled out to Al-Jubail", action: "Overhaul internal compressor and bench test in workshop", engineers: "Mildwin Cole / Roger Potante" },
+      { reportNo: "3929", station: "Airpointer", category: "Equipment Pullout", observation: "Airpointer BTEX analyzer pulled out to Al-Jubail", action: "Perform bench diagnostic and GC maintenance in shop", engineers: "Mildwin Cole / Roger Potante" },
+      { reportNo: "4152", station: "Airpointer", category: "Hardware Failure", observation: "CO stepper motor not rotating (11.8V verified)", action: "Replace CO stepper motor to isolate failure", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4158", station: "Thermo Station", category: "Compressor", observation: "Zero air compressor minor sound", action: "Order compressor rebuild kit", engineers: "Albert Guinto / Roger Potante" },
+      { reportNo: "4171", station: "Airpointer", category: "Sensor Defect", observation: "O3 module high flow confirmed defective flow sensor", action: "Replace O3 flow sensor (confirmed via Cell A/B swap)", engineers: "Albert Guinto / Roger Potante" },
+      { reportNo: "4161", station: "Thermo Station", category: "Hardware Alarm", observation: "42i NOx high cooler temperature alarm", action: "Replace PMT cooler assembly", engineers: "Albert M. Guinto / Roger Potante" },
+      { reportNo: "4326", station: "Thermo Station", category: "Consumables / Spares", observation: "Vacuum pump diaphragm required (P/N: 108007-00)", action: "Procure diaphragm kit P/N: 108007-00", engineers: "Mildwin Cole / Roger M. Potante" },
+      { reportNo: "4515", station: "Airpointer", category: "Sensor Defect", observation: "Airpointer SO2 flow sensor failed (unstable flow)", action: "Replace SO2 flow sensor assembly", engineers: "Albert Guinto / Roger Potante" },
+      { reportNo: "4515", station: "Airpointer", category: "Calibration / OEM", observation: "Grimm EDM 180 dust filter & air passage warning", action: "Send Grimm EDM 180 unit to OEM for annual calibration", engineers: "Albert Guinto / Roger Potante" },
+      { reportNo: "4581", station: "Airpointer", category: "Optical Maintenance", observation: "O3 photo detectors frequency warning persists", action: "Dismantle optical bench assembly to clean reflective mirrors & filters", engineers: "Albert Guinto / Shabbir Alam" },
+      { reportNo: "4583", station: "Airpointer", category: "OEM Repair Needed", observation: "Grimm PM internal air pump failed (loud sound, current too high)", action: "Ship unit to OEM for internal air pump overhaul", engineers: "Albert Guinto / Shabbir Alam" },
+      { reportNo: "4583", station: "Airpointer", category: "Analyzer Response", observation: "Airpointer SO2/H2S slow response to span gas", action: "Inspect SO2 reaction cell & optical filter for contamination", engineers: "Albert Guinto / Shabbir Alam" },
+      { reportNo: "4584", station: "Airpointer", category: "Calibrator Failure", observation: "Airpointer calibrator low O3 generation output", action: "Coordinate with MLU Austria for calibrator diagnosis & repair", engineers: "Albert Guinto / Shabbir Alam" },
+      { reportNo: "4584", station: "Thermo Station", category: "Deferred Calibration", observation: "Gas analyzer calibrations deferred due to live KAUST AQI broadcast", action: "Schedule zero/span calibration during off-peak maintenance window", engineers: "Albert Guinto / Shabbir Alam" },
+      { reportNo: "4590", station: "Airpointer", category: "Parts to Order", observation: "O3 photocells / detectors low intensity", action: "Replace O3 analyzer photo detector assembly", engineers: "Albert Guinto / Roger Potante" },
+      { reportNo: "4598", station: "Airpointer", category: "Sensor Defect", observation: "CO scrubber temperature sensor defective", action: "Replace CO scrubber temperature sensor", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4864", station: "Airpointer", category: "Hardware Failure", observation: "NOx Moly converter heater filament open (220V present)", action: "Replace NOx Moly converter heater assembly", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4864", station: "Airpointer", category: "Analyzer Stability", observation: "CO analyzer calibration OK but data reading unstable", action: "Diagnose & replace unstable CO module internal parts", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4865", station: "Thermo Station", category: "Manufacturer Inquiry", observation: "Chromatotec BTEX requires factory maintenance", action: "Send inquiry to Chromatotec factory for maintenance routine", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4865", station: "Thermo Station", category: "Datalogger Sync", observation: "PM10 value mismatch between analyzer and Envidas", action: "Calibrate signal scaling / datalogger input channel", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4866", station: "Thermo Station", category: "Consumables", observation: "Nitrogen generator filter needs replacement", action: "Replace N2 generator intake / inline filter", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4867", station: "Airpointer", category: "Parts to Order", observation: "CO IR source defective (measured resistance 152 ohms)", action: "Replace Airpointer CO IR source", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4867", station: "Airpointer", category: "Parts to Order", observation: "BTEX module pressure/flow alarm", action: "Await shipment of BTEX replacement parts", engineers: "Mildwin B. Cole / Roger M. Potante" },
+      { reportNo: "4852", station: "Thermo Station", category: "Equipment Pullout", observation: "Chromatotec BTEX & Nitroxycom N2 Generator", action: "Send both BTEX analyzer & N2 generator for factory repair", engineers: "Albert Guinto / Roger Potante / Naveen Kumar" },
+      { reportNo: "4853", station: "Thermo Station", category: "Parts to Order", observation: "Thermo 5028i sample tube heaters defective", action: "Procure & replace both sample tube heaters", engineers: "Albert Guinto / Roger Potante / Naveen Kumar" },
+      { reportNo: "4870", station: "Thermo Station", category: "Pump Maintenance", observation: "450i SO2 vacuum pump defective", action: "Procure replacement vacuum pump for 450i", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "4871", station: "Airpointer", category: "Parts to Order", observation: "Airpointer CO flow sensor defective", action: "Replace CO flow sensor", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "4874", station: "Airpointer", category: "Equipment Pullout", observation: "Grimm PM Analyzer (S/N: 18A20254) pulled out", action: "Ship to factory for calibration & internal pump repair", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "4874", station: "Airpointer", category: "Parts to Order", observation: "Airpointer NOx Moly converter parts pending", action: "Follow up converter delivery and installation", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "4875", station: "Thermo Station", category: "Parts Awaited", observation: "Thermo 43i SO2 is OFF awaiting replacement parts", action: "Follow up 43i spare parts arrival", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5013", station: "Thermo Station", category: "Parts to Order", observation: "49i O3 UV lamp source needs replacement", action: "Procure & replace 49i O3 UV lamp", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5013", station: "Thermo Station", category: "Parts Ordered", observation: "55i CH4/NM parts & 43i SO2 vacuum pump ordered", action: "Await delivery & install on site", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5014", station: "Airpointer", category: "Equipment Factory Return", observation: "Grimm PM analyzer needs factory overhaul", action: "Ship unit to OEM factory for service", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5015", station: "Thermo Station", category: "Parts to Order", observation: "450i H2S/SO2 UV lamp source end of service life", action: "Replace 450i UV lamp source", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5015", station: "Thermo Station", category: "Consumables", observation: "Filter ribbon roll needed", action: "Order replacement filter ribbon roll stock", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "5016", station: "Airpointer", category: "Hardware Follow-up", observation: "NOx Moly converter temperature increasing / alarm active", action: "Monitor temperature regulation & control circuit", engineers: "Mildwin B. Cole / Naveen Kumar" },
+      { reportNo: "4600", station: "ETLCO (Stack)", category: "Parts to Order", observation: "Thermo 51i-HT MIB (Measurement Interface Board) defective", action: "Procure & replace MIB board; order basic PM consumables", engineers: "Albert Guinto" },
+      { reportNo: "4873", station: "MA'ADEN", category: "Parts Awaited", observation: "Thermo 48i CO analyzer parts pending shipment", action: "Install 48i CO parts upon delivery & perform calibration", engineers: "Mildwin B. Cole / Albert Guinto" },
+      { reportNo: "5003", station: "Methan / Mobile", category: "Quotation / Replacement", observation: "Damaged sample hood inlet temporarily repaired", action: "Provide quotation to client for replacement sample hood inlet", engineers: "Roger Potante" }
+    ];
+
+    // Data Accessors
+    function getMasterRecords() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (!data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_MASTER_LOG));
+        return DEFAULT_MASTER_LOG;
+      }
+      return JSON.parse(data);
+    }
+
+    function saveMasterRecords(records) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function getActionItems() {
+      const data = localStorage.getItem(ACTION_ITEMS_KEY);
+      if (!data) {
+        localStorage.setItem(ACTION_ITEMS_KEY, JSON.stringify(DEFAULT_ACTION_ITEMS));
+        return DEFAULT_ACTION_ITEMS;
+      }
+      return JSON.parse(data);
+    }
+
+    // ==========================================
+    // TAB SWITCHING (Master Log vs Action Items)
+    // ==========================================
+    function switchMainTab(tab) {
+      currentTab = tab;
+      const logContainer = document.getElementById('masterLogContainer');
+      const actionContainer = document.getElementById('actionItemsContainer');
+      const filterToolbar = document.getElementById('filterToolbar');
+      const btnLog = document.getElementById('btnTabLog');
+      const btnActions = document.getElementById('btnTabActions');
+
+      if (tab === 'log') {
+        logContainer.classList.remove('hidden');
+        actionContainer.classList.add('hidden');
+        filterToolbar.classList.remove('hidden');
+        btnLog.className = "bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
+        btnActions.className = "bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-lg text-xs border border-amber-300";
+        renderTable();
       } else {
-        renderModelDropdown();
-        renderProblems();
+        logContainer.classList.add('hidden');
+        actionContainer.classList.remove('hidden');
+        filterToolbar.classList.add('hidden');
+        btnLog.className = "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-lg text-xs border border-slate-300";
+        btnActions.className = "bg-amber-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
+        renderActionItemsTable();
       }
     }
-  }
-</script>
 
+    // ==========================================
+    // EXPORT TO CSV (EXCEL FORMAT) ENGINE
+    // ==========================================
+    function exportToCSV() {
+      const records = getMasterRecords();
+      if (!records || records.length === 0) return alert("No records to export.");
+
+      const headers = ["Item #", "Report No.", "Service Date", "Client / Site", "Ref / PO No.", "System / Station", "Service Type", "Service Engineers", "Scope & Corrective Actions", "Findings / Comments", "Status"];
+      
+      let csvContent = "\uFEFF"; // UTF-8 BOM for Arabic/Special characters in Excel
+      csvContent += headers.map(h => `"${h}"`).join(",") + "\r\n";
+
+      records.forEach(r => {
+        const row = [
+          r.item || '',
+          r.reportNo || '',
+          r.date || '',
+          r.client || '',
+          r.refPO || '',
+          r.station || '',
+          r.type || '',
+          r.engineers || '',
+          (r.scope || '').replace(/"/g, '""'),
+          (r.comments || '').replace(/"/g, '""'),
+          r.status || ''
+        ];
+        csvContent += row.map(val => `"${val}"`).join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Al-Sinan_Master_Service_Log_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportActionItemsCSV() {
+      const items = getActionItems();
+      const headers = ["Report No.", "Station / Equipment", "Category", "Item / Observation", "Action Required", "Assigned Engineers"];
+      let csvContent = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\r\n";
+
+      items.forEach(i => {
+        const row = [
+          i.reportNo || '',
+          i.station || '',
+          i.category || '',
+          (i.observation || '').replace(/"/g, '""'),
+          (i.action || '').replace(/"/g, '""'),
+          i.engineers || ''
+        ];
+        csvContent += row.map(v => `"${v}"`).join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Al-Sinan_Action_Items_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // JSON Backup & Restore
+    function backupJSON() {
+      const data = {
+        masterRecords: getMasterRecords(),
+        actionItems: getActionItems(),
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Al-Sinan_Database_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      link.click();
+    }
+
+    function restoreJSON() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = event => {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            if (parsed.masterRecords) {
+              saveMasterRecords(parsed.masterRecords);
+              if (parsed.actionItems) localStorage.setItem(ACTION_ITEMS_KEY, JSON.stringify(parsed.actionItems));
+              alert("Database successfully restored!");
+              renderTable();
+            } else {
+              alert("Invalid backup file format.");
+            }
+          } catch(err) {
+            alert("Error reading JSON file: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    // ==========================================
+    // RENDER TABLES & FILTERS
+    // ==========================================
+    function renderTable() {
+      const q = document.getElementById('homeSearchInput').value.toLowerCase().trim();
+      const clientFilt = document.getElementById('clientFilter').value;
+      const statusFilt = document.getElementById('statusFilter').value;
+      const sortBy = document.getElementById('sortSelect').value;
+
+      let records = getMasterRecords();
+
+      // Search Filter
+      if (q) {
+        records = records.filter(r => 
+          (r.reportNo && r.reportNo.toLowerCase().includes(q)) ||
+          (r.client && r.client.toLowerCase().includes(q)) ||
+          (r.refPO && r.refPO.toLowerCase().includes(q)) ||
+          (r.station && r.station.toLowerCase().includes(q)) ||
+          (r.engineers && r.engineers.toLowerCase().includes(q)) ||
+          (r.scope && r.scope.toLowerCase().includes(q)) ||
+          (r.comments && r.comments.toLowerCase().includes(q))
+        );
+      }
+
+      // Client Filter
+      if (clientFilt !== 'ALL') {
+        records = records.filter(r => r.client && r.client.toUpperCase().includes(clientFilt.toUpperCase()));
+      }
+
+      // Status Filter
+      if (statusFilt !== 'ALL') {
+        if (statusFilt === 'Completed') {
+          records = records.filter(r => r.status && r.status.toLowerCase().includes('completed'));
+        } else {
+          records = records.filter(r => !r.status || !r.status.toLowerCase().includes('completed'));
+        }
+      }
+
+      // Sort
+      records.sort((a, b) => {
+        if (sortBy === 'item-desc') return (b.item || 0) - (a.item || 0);
+        if (sortBy === 'item-asc') return (a.item || 0) - (b.item || 0);
+        if (sortBy === 'report-desc') return String(b.reportNo || '').localeCompare(String(a.reportNo || ''), undefined, {numeric: true});
+        if (sortBy === 'report-asc') return String(a.reportNo || '').localeCompare(String(b.reportNo || ''), undefined, {numeric: true});
+        if (sortBy === 'client-asc') return (a.client || '').localeCompare(b.client || '');
+        return (b.item || 0) - (a.item || 0);
+      });
+
+      const tbody = document.getElementById('reportsTableBody');
+      tbody.innerHTML = '';
+      document.getElementById('recordCount').textContent = records.length;
+      document.getElementById('emptyNotice').classList.toggle('hidden', records.length > 0);
+
+      records.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b";
+
+        const isCompleted = (r.status || '').toLowerCase().includes('completed');
+        const statusBadge = isCompleted ?
+          `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Completed</span>` :
+          `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Pending'}</span>`;
+
+        let actionBtns = `<button onclick="openMasterReport('${r.reportNo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 rounded text-[11px] font-semibold">Open</button>`;
+        if (currentIsAdmin) {
+          actionBtns += ` <button onclick="deleteMasterReport('${r.reportNo}')" class="text-red-500 hover:bg-red-50 px-1.5 py-1 rounded text-xs font-bold" title="Delete">✕</button>`;
+        }
+
+        tr.innerHTML = `
+          <td class="p-2 text-center text-slate-400 font-mono text-[11px]">${r.item || '-'}</td>
+          <td class="p-2 font-bold text-red-600 font-mono">${r.reportNo || '-'}</td>
+          <td class="p-2 text-slate-700 whitespace-nowrap font-medium">${r.date || '-'}</td>
+          <td class="p-2 font-semibold text-slate-900">${r.client || '-'}</td>
+          <td class="p-2 text-slate-700 font-medium">${r.station || '-'}</td>
+          <td class="p-2 text-slate-600 text-[11px]">${r.type || '-'}</td>
+          <td class="p-2 text-slate-600 text-[11px]">${r.engineers || '-'}</td>
+          <td class="p-2 text-slate-500 text-[11px] line-clamp-2" title="${r.comments || ''}">${r.comments || '-'}</td>
+          <td class="p-2 text-center">${statusBadge}</td>
+          <td class="p-2 text-right space-x-1 no-print">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderActionItemsTable() {
+      const items = getActionItems();
+      const tbody = document.getElementById('actionItemsTableBody');
+      tbody.innerHTML = '';
+
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b";
+
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-red-600 font-mono">${item.reportNo || '-'}</td>
+          <td class="p-2.5 font-bold text-slate-800">${item.station || '-'}</td>
+          <td class="p-2.5"><span class="bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded text-[10px] whitespace-nowrap">${item.category || '-'}</span></td>
+          <td class="p-2.5 text-slate-700 font-medium">${item.observation || '-'}</td>
+          <td class="p-2.5 text-blue-800 font-semibold">${item.action || '-'}</td>
+          <td class="p-2.5 text-slate-600 text-[11px]">${item.engineers || '-'}</td>
+          <td class="p-2.5 text-center no-print">
+            <button onclick="openMasterReport('${item.reportNo}')" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-2 py-0.5 rounded text-[10px] font-bold">View ➔</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ==========================================
+    // FORM VIEW & LANDSCAPE PAPER BINDINGS
+    // ==========================================
+    function goHome() {
+      document.getElementById('reportView').classList.add('hidden');
+      document.getElementById('homeView').classList.remove('hidden');
+      renderTable();
+    }
+
+    function openReportView() {
+      document.getElementById('homeView').classList.add('hidden');
+      document.getElementById('reportView').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function createNewReport() {
+      document.querySelectorAll('#reportView input, #reportView textarea').forEach(el => {
+        if(el.type !== 'checkbox') el.value = '';
+        else el.checked = false;
+        el.removeAttribute('disabled');
+      });
+      document.getElementById('formAccessBadge').textContent = "Mode: New Report";
+      document.getElementById('formAccessBadge').className = "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-blue-700 text-white";
+      document.getElementById('saveReportBtn').style.display = "inline-block";
+      openReportView();
+    }
+
+    function openMasterReport(reportNo) {
+      const records = getMasterRecords();
+      const r = records.find(item => String(item.reportNo) === String(reportNo));
+      if (!r) return alert("Report details not found for #" + reportNo);
+
+      // Populate Form
+      document.getElementById('reportNo').value = r.reportNo || '';
+      document.getElementById('refNo').value = (r.refPO || '').replace('Ref: ', '').split('/')[0].trim();
+      document.getElementById('travelDate').value = r.date || '';
+      document.getElementById('custCompany').value = r.client || '';
+      document.getElementById('custLocation').value = (r.client || '').includes('Thuwal') ? 'Thuwal' : ((r.client || '').includes('Yanbu') ? 'Yanbu' : 'Jubail / Riyadh');
+      document.getElementById('custPO').value = (r.refPO || '').includes('PO:') ? r.refPO.split('PO:')[1].trim() : '';
+      
+      document.getElementById('upgradesChanges').value = r.station || '';
+      document.getElementById('symptomsText').value = r.scope || '';
+      document.getElementById('correctiveActionText').value = r.scope || '';
+      document.getElementById('engrComments').value = r.comments || '';
+      document.getElementById('engrName').value = r.engineers || '';
+
+      // Checkboxes
+      const typeStr = (r.type || '').toUpperCase();
+      document.querySelectorAll('input[name="serviceScope"]').forEach(cb => {
+        cb.checked = typeStr.includes(cb.value);
+      });
+
+      const canEdit = currentIsAdmin;
+      document.querySelectorAll('#reportView input, #reportView textarea').forEach(el => {
+        if(el.id === 'driveLink') return;
+        if(canEdit) el.removeAttribute('disabled');
+        else el.setAttribute('disabled', 'disabled');
+      });
+
+      document.getElementById('formAccessBadge').textContent = canEdit ? "Mode: Admin Edit" : "Mode: Read-Only";
+      document.getElementById('formAccessBadge').className = canEdit ? "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-amber-600 text-white" : "text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-slate-800 text-slate-300";
+      document.getElementById('saveReportBtn').style.display = canEdit ? "inline-block" : "none";
+
+      openReportView();
+    }
+
+    function saveReportData() {
+      const reportNo = document.getElementById('reportNo').value.trim();
+      if (!reportNo) return alert("Please provide Report No. before saving.");
+
+      const records = getMasterRecords();
+      const existingIdx = records.findIndex(r => String(r.reportNo) === String(reportNo));
+
+      const updatedRecord = {
+        item: existingIdx >= 0 ? records[existingIdx].item : (records.length + 1),
+        reportNo: reportNo,
+        date: document.getElementById('travelDate').value,
+        client: document.getElementById('custCompany').value,
+        refPO: `Ref: ${document.getElementById('refNo').value} / PO: ${document.getElementById('custPO').value}`,
+        station: document.getElementById('upgradesChanges').value,
+        type: "Service / Maintenance",
+        engineers: document.getElementById('engrName').value,
+        scope: document.getElementById('symptomsText').value,
+        comments: document.getElementById('engrComments').value,
+        status: "Completed"
+      };
+
+      if (existingIdx >= 0) {
+        if (!currentIsAdmin) return alert("Only the Administrator can update an existing report.");
+        records[existingIdx] = updatedRecord;
+      } else {
+        records.unshift(updatedRecord);
+      }
+
+      saveMasterRecords(records);
+      alert("Service Report successfully saved to Master Log!");
+      goHome();
+    }
+
+    function deleteMasterReport(reportNo) {
+      if (!currentIsAdmin) return alert("Admin login required to delete records.");
+      if (confirm(`Are you sure you want to delete Report #${reportNo}?`)) {
+        const records = getMasterRecords().filter(r => String(r.reportNo) !== String(reportNo));
+        saveMasterRecords(records);
+        renderTable();
+      }
+    }
+
+    // Admin Auth
+    function toggleAdminLogin() {
+      if (currentIsAdmin) {
+        currentIsAdmin = false;
+        alert("Logged out of Admin mode.");
+      } else {
+        const pass = prompt("Enter Administrator Password (********):");
+        if (pass === ADMIN_PASS) {
+          currentIsAdmin = true;
+          alert("Admin verified. Full edit/delete permissions active.");
+        } else if (pass !== null) {
+          alert("Incorrect password.");
+        }
+      }
+      document.getElementById('adminLoginBtn').className = currentIsAdmin ? 
+        "bg-emerald-600 text-white font-semibold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shadow" : 
+        "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold px-3 py-2 rounded-lg text-xs flex items-center gap-1";
+      document.getElementById('adminStatusIcon').textContent = currentIsAdmin ? "🔓" : "🔒";
+      document.getElementById('adminStatusText').textContent = currentIsAdmin ? "Admin Active" : "Admin Login";
+      renderTable();
+    }
+
+    function testDriveLink() {
+      const url = document.getElementById('driveLink').value;
+      if (!url) return alert("Please enter a Google Drive link first.");
+      window.open(url, '_blank');
+    }
+
+    // AI SCANNER ENGINE (GEMINI 3.8 FLASH READY)
+    async function processImageWithAI(fileInput) {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      let apiKey = localStorage.getItem(GEMINI_API_KEY_STORAGE) || '';
+      if (!apiKey) {
+        apiKey = prompt("Enter your Google Gemini API Key:\n(Get one free from https://aistudio.google.com)");
+        if (!apiKey) return (fileInput.value = '');
+        localStorage.setItem(GEMINI_API_KEY_STORAGE, apiKey.trim());
+      }
+
+      const modal = document.getElementById('aiLoadingModal');
+      modal.classList.remove('hidden');
+
+      try {
+        const base64Data = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result.split(',')[1]);
+          r.onerror = rej;
+          r.readAsDataURL(file);
+        });
+
+        const promptText = `Extract all information from this service report image into strict JSON:
+{"reportNo":"","refNo":"","travelDate":"","custCompany":"","custLocation":"","custPO":"","upgradesChanges":"","symptomsText":"","correctiveActionText":"","engrComments":"","engrName":"","authCustName":""}`;
+
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: file.type || 'image/jpeg', data: base64Data } }] }] })
+        });
+
+        if (!resp.ok) throw new Error("AI call failed. Please check your API key.");
+        const json = await resp.json();
+        let raw = json.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        raw = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const data = JSON.parse(raw);
+
+        if (data.reportNo) document.getElementById('reportNo').value = data.reportNo;
+        if (data.refNo) document.getElementById('refNo').value = data.refNo;
+        if (data.travelDate) document.getElementById('travelDate').value = data.travelDate;
+        if (data.custCompany) document.getElementById('custCompany').value = data.custCompany;
+        if (data.custLocation) document.getElementById('custLocation').value = data.custLocation;
+        if (data.custPO) document.getElementById('custPO').value = data.custPO;
+        if (data.upgradesChanges) document.getElementById('upgradesChanges').value = data.upgradesChanges;
+        if (data.symptomsText) document.getElementById('symptomsText').value = data.symptomsText;
+        if (data.correctiveActionText) document.getElementById('correctiveActionText').value = data.correctiveActionText;
+        if (data.engrComments) document.getElementById('engrComments').value = data.engrComments;
+        if (data.engrName) document.getElementById('engrName').value = data.engrName;
+
+        alert("✅ Auto-fill complete! Values populated successfully.");
+      } catch (err) {
+        alert("AI Scanning Error: " + err.message);
+      } finally {
+        modal.classList.add('hidden');
+        fileInput.value = '';
+      }
+    }
+
+    // INITIAL LOAD
+    getMasterRecords();
+    renderTable();
+  </script>
 </body>
 </html>
