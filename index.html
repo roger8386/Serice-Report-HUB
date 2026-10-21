@@ -37,6 +37,17 @@
       input[type="checkbox"] { accent-color: #000 !important; }
     }
     .report-table th, .report-table td { border: 1px solid #000; }
+    
+    /* Clickable header styling */
+    .sortable-th {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s ease;
+    }
+    .sortable-th:hover {
+      background-color: #e2e8f0;
+      color: #1e293b;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans text-xs">
@@ -62,42 +73,35 @@
             <h1 class="text-lg sm:text-xl font-black uppercase tracking-tight text-slate-900">
               Abdul Karim H. Al-Sinan & Partner Trading Co.
             </h1>
-            <p class="text-[11px] text-slate-500 font-medium">Master Service Report Log & Tracking System</p>
+            <p class="text-[11px] text-slate-500 font-medium">Master Service Report Log & Tracking System (KAUST, SAMREF, YUNIGREEN, ETLCO, MA'ADEN, Methan)</p>
           </div>
         </div>
       </div>
 
       <!-- Action & Export Controls -->
       <div class="flex flex-wrap items-center gap-2 no-print w-full lg:w-auto justify-start lg:justify-end">
-        <!-- Tab Switchers -->
         <button id="btnTabLog" onclick="switchMainTab('log')" class="bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow">
           📋 Master Log (92)
         </button>
         <button id="btnTabActions" onclick="switchMainTab('actions')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-lg text-xs border border-amber-300">
           ⚠️ Action Items (43)
         </button>
-
-        <!-- Export CSV Button -->
         <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-lg text-xs flex items-center gap-1 shadow">
           📥 Export CSV (Excel)
         </button>
-
-        <!-- Admin Login -->
         <button id="adminLoginBtn" onclick="toggleAdminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-semibold px-3 py-2 rounded-lg text-xs flex items-center gap-1">
           <span id="adminStatusIcon">🔒</span> <span id="adminStatusText">Admin Login</span>
         </button>
-
-        <!-- New Report Button -->
         <button onclick="createNewReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-xs flex items-center gap-1 shadow">
           ➕ New Report
         </button>
       </div>
     </div>
 
-    <!-- FILTER & SEARCH TOOLBAR -->
+    <!-- FILTER & COMPREHENSIVE SORT TOOLBAR -->
     <div id="filterToolbar" class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3 no-print">
       <!-- Search Input -->
-      <div class="w-full md:w-96 relative">
+      <div class="w-full md:w-80 relative">
         <input 
           type="text" 
           id="homeSearchInput" 
@@ -108,7 +112,7 @@
         <button onclick="document.getElementById('homeSearchInput').value=''; renderTable();" class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 text-xs">✕</button>
       </div>
 
-      <!-- Filters -->
+      <!-- Filters & Complete Sort Options -->
       <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
         <!-- Client Filter -->
         <select id="clientFilter" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-medium">
@@ -128,13 +132,29 @@
           <option value="Pending">Pending / In Progress</option>
         </select>
 
-        <!-- Sort Select -->
-        <select id="sortSelect" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-medium">
-          <option value="item-desc">Item # (Newest First)</option>
-          <option value="item-asc">Item # (Oldest First)</option>
-          <option value="report-desc">Report No. (High-Low)</option>
-          <option value="report-asc">Report No. (Low-High)</option>
-          <option value="client-asc">Client Name (A-Z)</option>
+        <!-- Complete Sort By Dropdown -->
+        <select id="sortSelect" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded text-xs px-2.5 py-1.5 font-semibold text-blue-900 focus:ring-1 focus:ring-blue-500">
+          <optgroup label="📅 Sort by Date">
+            <option value="date-desc" selected>Service Date: Newest First (2026 ➔ 2021)</option>
+            <option value="date-asc">Service Date: Oldest First (2021 ➔ 2026)</option>
+          </optgroup>
+          <optgroup label="🔢 Sort by Numbers">
+            <option value="report-desc">Report No. (High to Low)</option>
+            <option value="report-asc">Report No. (Low to High)</option>
+            <option value="item-desc">Item # (92 ➔ 1)</option>
+            <option value="item-asc">Item # (1 ➔ 92)</option>
+          </optgroup>
+          <optgroup label="🔤 Sort by Text">
+            <option value="client-asc">Client / Site (A to Z)</option>
+            <option value="client-desc">Client / Site (Z to A)</option>
+            <option value="station-asc">System / Station (A to Z)</option>
+            <option value="type-asc">Service Type (A to Z)</option>
+            <option value="engineers-asc">Service Engineers (A to Z)</option>
+          </optgroup>
+          <optgroup label="⚡ Sort by Status">
+            <option value="status-pending">Status: Pending / Action Needed First</option>
+            <option value="status-completed">Status: Completed First</option>
+          </optgroup>
         </select>
       </div>
     </div>
@@ -145,15 +165,15 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead class="bg-slate-100 uppercase text-[10px] font-bold border-b border-slate-200 sticky top-0 z-10">
             <tr>
-              <th class="p-2.5 w-12 text-center">#</th>
-              <th class="p-2.5 w-20">Report No.</th>
-              <th class="p-2.5 w-28">Service Date</th>
-              <th class="p-2.5 w-36">Client / Site</th>
-              <th class="p-2.5 w-40">System / Station</th>
-              <th class="p-2.5 w-32">Service Type</th>
-              <th class="p-2.5 w-36">Engineers</th>
+              <th onclick="toggleHeaderSort('item')" class="p-2.5 w-12 text-center sortable-th" title="Click to sort by Item #"># ↕</th>
+              <th onclick="toggleHeaderSort('report')" class="p-2.5 w-24 sortable-th" title="Click to sort by Report No.">Report No. ↕</th>
+              <th onclick="toggleHeaderSort('date')" class="p-2.5 w-32 sortable-th text-blue-800" title="Click to sort by Service Date">Service Date 📅 ↕</th>
+              <th onclick="toggleHeaderSort('client')" class="p-2.5 w-40 sortable-th" title="Click to sort by Client">Client / Site ↕</th>
+              <th onclick="toggleHeaderSort('station')" class="p-2.5 w-44 sortable-th" title="Click to sort by Station">System / Station ↕</th>
+              <th onclick="toggleHeaderSort('type')" class="p-2.5 w-36 sortable-th" title="Click to sort by Service Type">Service Type ↕</th>
+              <th onclick="toggleHeaderSort('engineers')" class="p-2.5 w-40 sortable-th" title="Click to sort by Engineer">Engineers ↕</th>
               <th class="p-2.5">Findings / Comments</th>
-              <th class="p-2.5 w-24 text-center">Status</th>
+              <th onclick="toggleHeaderSort('status')" class="p-2.5 w-28 text-center sortable-th" title="Click to sort by Status">Status ↕</th>
               <th class="p-2.5 w-24 text-right no-print">Actions</th>
             </tr>
           </thead>
@@ -525,7 +545,7 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 3. JAVASCRIPT: MASTER DATABASE, EXPORTS & ENGINES        -->
+  <!-- 3. JAVASCRIPT: DATA, SMART DATE PARSER & COMPLETE SORTS  -->
   <!-- ======================================================== -->
   <script>
     const STORAGE_KEY = 'AL_SINAN_MASTER_REPORTS_V1';
@@ -533,11 +553,59 @@
     const GEMINI_API_KEY_STORAGE = 'GEMINI_API_KEY';
     const ADMIN_PASS = 'admin123';
     let currentIsAdmin = false;
-    let currentTab = 'log'; // 'log' or 'actions'
+    let currentTab = 'log';
 
-    // ==========================================
-    // INITIALIZE 92 MASTER SERVICE REPORTS DATA
-    // ==========================================
+    // 1. SMART DATE PARSER FOR SORTING
+    // Accurately parses "Oct 20-21, 2021", "Aug 29 - Sep 6, 2022", "Feb 16, 2026", etc.
+    function parseServiceDate(dateStr) {
+      if (!dateStr) return 0;
+      
+      // Extract Year
+      const yearMatch = dateStr.match(/\b(20\d{2})\b/);
+      const year = yearMatch ? parseInt(yearMatch[1], 10) : 2020;
+
+      // Extract Month
+      const months = {
+        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+        jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11
+      };
+      const monthMatch = dateStr.toLowerCase().match(/(jan|feb|mar|apr|may|jun|jul|aug|sept|sep|oct|nov|dec)/);
+      const month = monthMatch ? months[monthMatch[1]] : 0;
+
+      // Extract Day (first number before hyphen or comma)
+      const dayMatch = dateStr.match(/\b([1-9]|[12]\d|3[01])\b/);
+      const day = dayMatch ? parseInt(dayMatch[1], 10) : 1;
+
+      return new Date(year, month, day).getTime();
+    }
+
+    // Interactive Header Click Sort
+    function toggleHeaderSort(type) {
+      const select = document.getElementById('sortSelect');
+      const cur = select.value;
+
+      if (type === 'date') {
+        select.value = (cur === 'date-desc') ? 'date-asc' : 'date-desc';
+      } else if (type === 'report') {
+        select.value = (cur === 'report-desc') ? 'report-asc' : 'report-desc';
+      } else if (type === 'item') {
+        select.value = (cur === 'item-desc') ? 'item-asc' : 'item-desc';
+      } else if (type === 'client') {
+        select.value = (cur === 'client-asc') ? 'client-desc' : 'client-asc';
+      } else if (type === 'station') {
+        select.value = (cur === 'station-asc') ? 'station-desc' : 'station-asc';
+      } else if (type === 'type') {
+        select.value = 'type-asc';
+      } else if (type === 'engineers') {
+        select.value = 'engineers-asc';
+      } else if (type === 'status') {
+        select.value = (cur === 'status-pending') ? 'status-completed' : 'status-pending';
+      }
+
+      renderTable();
+    }
+
+    // 2. MASTER 92 LOG RECORDS
     const DEFAULT_MASTER_LOG = [
       { item: 1, reportNo: "3199", date: "Oct 20-21, 2021", client: "KAUST (Thuwal)", refPO: "Ref: 2019FS92-19651 / PO: 4500201829", station: "AQMS Station", type: "Preventive Maintenance", engineers: "Mildwin Cole", scope: "Replaced air filter at manifold cabinet; cleaned sample inlet tube & head of PM5014i/5028i; checked sample inlet tube for moisture; checked exhaust filters; cleaned met sensors; performed zero & span calibration of analyzers; checked Envidas & Met One datalogger; checked UPS status; housekeeping.", comments: "Monthly maintenance completed successfully. Checked cylinder pressures and station logs.", status: "Completed" },
       { item: 2, reportNo: "3200", date: "Oct 20-21, 2021", client: "KAUST (Thuwal)", refPO: "Ref: 2019-445-18684 / PO: 4500201829", station: "AQMS Analyzers (42i, PM, 55i)", type: "Repair / Warranty", engineers: "Mildwin Cole", scope: "Cleaned sample inlet tube, head, and detector of PM2.5/10; performed detector & foil calibration; inspected 42i high chamber pressure; cleaned vacuum pump diaphragm & capillaries; started 55i methane analyzer after flame out; replaced HEPA filter.", comments: "PM2.5/10 analyzer placed under 2-day observation. Need to order pump rebuild kit and vacuum pump diaphragm. RH sensor defective, requires replacement.", status: "Pending Parts" },
@@ -633,9 +701,7 @@
       { item: 92, reportNo: "4872", date: "June 24-25, 2026", client: "YUNIGREEN (Yanbu)", refPO: "Ref: 202504089-25560 / PO: 251200952", station: "Ambient Air Quality Fence Monitoring", type: "Commissioning / SAT / Training", engineers: "Mildwin B. Cole / Naveen Kumar", scope: "Commissioning of fence monitoring station; Site Acceptance Test (SAT); installed sample manifold system; checked gas cylinder pressures; powered ON station and started up all equipment; performed zero & span calibration of THC and BTEX analyzers (5-point linearity test); conducted actual user operation & maintenance training.", comments: "Commissioning and SAT successfully completed. All equipment and analyzers working fine. 146i calibrator verified OK. Client signed: Abdul Rab.", status: "Completed" }
     ];
 
-    // ==========================================
-    // INITIALIZE 43 PENDING ACTION ITEMS
-    // ==========================================
+    // 3. ACTION ITEMS DATA
     const DEFAULT_ACTION_ITEMS = [
       { reportNo: "3200", station: "AQMS 42i", category: "Parts", observation: "Vacuum pump rebuild kit & diaphragm", action: "Procure rebuild kit for vacuum pump", engineers: "Mildwin Cole" },
       { reportNo: "3588", station: "Airpointer", category: "Water Damage / Parts", observation: "Watermark from PM inlet causing SO2 PCB corrosion", action: "Waterproofing PM inlet / check PCB integrity", engineers: "Roger Potante" },
@@ -682,7 +748,6 @@
       { reportNo: "5003", station: "Methan / Mobile", category: "Quotation / Replacement", observation: "Damaged sample hood inlet temporarily repaired", action: "Provide quotation to client for replacement sample hood inlet", engineers: "Roger Potante" }
     ];
 
-    // Data Accessors
     function getMasterRecords() {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) {
@@ -705,145 +770,7 @@
       return JSON.parse(data);
     }
 
-    // ==========================================
-    // TAB SWITCHING (Master Log vs Action Items)
-    // ==========================================
-    function switchMainTab(tab) {
-      currentTab = tab;
-      const logContainer = document.getElementById('masterLogContainer');
-      const actionContainer = document.getElementById('actionItemsContainer');
-      const filterToolbar = document.getElementById('filterToolbar');
-      const btnLog = document.getElementById('btnTabLog');
-      const btnActions = document.getElementById('btnTabActions');
-
-      if (tab === 'log') {
-        logContainer.classList.remove('hidden');
-        actionContainer.classList.add('hidden');
-        filterToolbar.classList.remove('hidden');
-        btnLog.className = "bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
-        btnActions.className = "bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-lg text-xs border border-amber-300";
-        renderTable();
-      } else {
-        logContainer.classList.add('hidden');
-        actionContainer.classList.remove('hidden');
-        filterToolbar.classList.add('hidden');
-        btnLog.className = "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-lg text-xs border border-slate-300";
-        btnActions.className = "bg-amber-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
-        renderActionItemsTable();
-      }
-    }
-
-    // ==========================================
-    // EXPORT TO CSV (EXCEL FORMAT) ENGINE
-    // ==========================================
-    function exportToCSV() {
-      const records = getMasterRecords();
-      if (!records || records.length === 0) return alert("No records to export.");
-
-      const headers = ["Item #", "Report No.", "Service Date", "Client / Site", "Ref / PO No.", "System / Station", "Service Type", "Service Engineers", "Scope & Corrective Actions", "Findings / Comments", "Status"];
-      
-      let csvContent = "\uFEFF"; // UTF-8 BOM for Arabic/Special characters in Excel
-      csvContent += headers.map(h => `"${h}"`).join(",") + "\r\n";
-
-      records.forEach(r => {
-        const row = [
-          r.item || '',
-          r.reportNo || '',
-          r.date || '',
-          r.client || '',
-          r.refPO || '',
-          r.station || '',
-          r.type || '',
-          r.engineers || '',
-          (r.scope || '').replace(/"/g, '""'),
-          (r.comments || '').replace(/"/g, '""'),
-          r.status || ''
-        ];
-        csvContent += row.map(val => `"${val}"`).join(",") + "\r\n";
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Al-Sinan_Master_Service_Log_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    function exportActionItemsCSV() {
-      const items = getActionItems();
-      const headers = ["Report No.", "Station / Equipment", "Category", "Item / Observation", "Action Required", "Assigned Engineers"];
-      let csvContent = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\r\n";
-
-      items.forEach(i => {
-        const row = [
-          i.reportNo || '',
-          i.station || '',
-          i.category || '',
-          (i.observation || '').replace(/"/g, '""'),
-          (i.action || '').replace(/"/g, '""'),
-          i.engineers || ''
-        ];
-        csvContent += row.map(v => `"${v}"`).join(",") + "\r\n";
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Al-Sinan_Action_Items_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    // JSON Backup & Restore
-    function backupJSON() {
-      const data = {
-        masterRecords: getMasterRecords(),
-        actionItems: getActionItems(),
-        exportedAt: new Date().toISOString()
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Al-Sinan_Database_Backup_${new Date().toISOString().slice(0,10)}.json`;
-      link.click();
-    }
-
-    function restoreJSON() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = e => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = event => {
-          try {
-            const parsed = JSON.parse(event.target.result);
-            if (parsed.masterRecords) {
-              saveMasterRecords(parsed.masterRecords);
-              if (parsed.actionItems) localStorage.setItem(ACTION_ITEMS_KEY, JSON.stringify(parsed.actionItems));
-              alert("Database successfully restored!");
-              renderTable();
-            } else {
-              alert("Invalid backup file format.");
-            }
-          } catch(err) {
-            alert("Error reading JSON file: " + err.message);
-          }
-        };
-        reader.readAsText(file);
-      };
-      input.click();
-    }
-
-    // ==========================================
-    // RENDER TABLES & FILTERS
-    // ==========================================
+    // 4. RENDER TABLE WITH ADVANCED SORTING
     function renderTable() {
       const q = document.getElementById('homeSearchInput').value.toLowerCase().trim();
       const clientFilt = document.getElementById('clientFilter').value;
@@ -856,6 +783,7 @@
       if (q) {
         records = records.filter(r => 
           (r.reportNo && r.reportNo.toLowerCase().includes(q)) ||
+          (r.date && r.date.toLowerCase().includes(q)) ||
           (r.client && r.client.toLowerCase().includes(q)) ||
           (r.refPO && r.refPO.toLowerCase().includes(q)) ||
           (r.station && r.station.toLowerCase().includes(q)) ||
@@ -879,13 +807,70 @@
         }
       }
 
-      // Sort
+      // COMPLETE SORTING ENGINE
       records.sort((a, b) => {
-        if (sortBy === 'item-desc') return (b.item || 0) - (a.item || 0);
-        if (sortBy === 'item-asc') return (a.item || 0) - (b.item || 0);
-        if (sortBy === 'report-desc') return String(b.reportNo || '').localeCompare(String(a.reportNo || ''), undefined, {numeric: true});
-        if (sortBy === 'report-asc') return String(a.reportNo || '').localeCompare(String(b.reportNo || ''), undefined, {numeric: true});
-        if (sortBy === 'client-asc') return (a.client || '').localeCompare(b.client || '');
+        // 1. DATE SORTS
+        if (sortBy === 'date-desc') {
+          return parseServiceDate(b.date) - parseServiceDate(a.date);
+        }
+        if (sortBy === 'date-asc') {
+          return parseServiceDate(a.date) - parseServiceDate(b.date);
+        }
+
+        // 2. ITEM NUMBER SORTS
+        if (sortBy === 'item-desc') {
+          return (b.item || 0) - (a.item || 0);
+        }
+        if (sortBy === 'item-asc') {
+          return (a.item || 0) - (b.item || 0);
+        }
+
+        // 3. REPORT NUMBER SORTS
+        if (sortBy === 'report-desc') {
+          return String(b.reportNo || '').localeCompare(String(a.reportNo || ''), undefined, {numeric: true});
+        }
+        if (sortBy === 'report-asc') {
+          return String(a.reportNo || '').localeCompare(String(b.reportNo || ''), undefined, {numeric: true});
+        }
+
+        // 4. CLIENT / SITE SORTS
+        if (sortBy === 'client-asc') {
+          return (a.client || '').localeCompare(b.client || '');
+        }
+        if (sortBy === 'client-desc') {
+          return (b.client || '').localeCompare(a.client || '');
+        }
+
+        // 5. STATION / SYSTEM SORTS
+        if (sortBy === 'station-asc') {
+          return (a.station || '').localeCompare(b.station || '');
+        }
+        if (sortBy === 'station-desc') {
+          return (b.station || '').localeCompare(a.station || '');
+        }
+
+        // 6. SERVICE TYPE SORT
+        if (sortBy === 'type-asc') {
+          return (a.type || '').localeCompare(b.type || '');
+        }
+
+        // 7. ENGINEERS SORT
+        if (sortBy === 'engineers-asc') {
+          return (a.engineers || '').localeCompare(b.engineers || '');
+        }
+
+        // 8. STATUS SORTS
+        if (sortBy === 'status-pending') {
+          const aComp = (a.status || '').toLowerCase().includes('completed');
+          const bComp = (b.status || '').toLowerCase().includes('completed');
+          return aComp === bComp ? 0 : (aComp ? 1 : -1);
+        }
+        if (sortBy === 'status-completed') {
+          const aComp = (a.status || '').toLowerCase().includes('completed');
+          const bComp = (b.status || '').toLowerCase().includes('completed');
+          return aComp === bComp ? 0 : (aComp ? -1 : 1);
+        }
+
         return (b.item || 0) - (a.item || 0);
       });
 
@@ -903,22 +888,22 @@
           `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Completed</span>` :
           `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Pending'}</span>`;
 
-        let actionBtns = `<button onclick="openMasterReport('${r.reportNo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 rounded text-[11px] font-semibold">Open</button>`;
+        let actionBtns = `<button onclick="openMasterReport('${r.reportNo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded text-[11px] font-semibold">Open</button>`;
         if (currentIsAdmin) {
           actionBtns += ` <button onclick="deleteMasterReport('${r.reportNo}')" class="text-red-500 hover:bg-red-50 px-1.5 py-1 rounded text-xs font-bold" title="Delete">✕</button>`;
         }
 
         tr.innerHTML = `
-          <td class="p-2 text-center text-slate-400 font-mono text-[11px]">${r.item || '-'}</td>
-          <td class="p-2 font-bold text-red-600 font-mono">${r.reportNo || '-'}</td>
-          <td class="p-2 text-slate-700 whitespace-nowrap font-medium">${r.date || '-'}</td>
-          <td class="p-2 font-semibold text-slate-900">${r.client || '-'}</td>
-          <td class="p-2 text-slate-700 font-medium">${r.station || '-'}</td>
-          <td class="p-2 text-slate-600 text-[11px]">${r.type || '-'}</td>
-          <td class="p-2 text-slate-600 text-[11px]">${r.engineers || '-'}</td>
-          <td class="p-2 text-slate-500 text-[11px] line-clamp-2" title="${r.comments || ''}">${r.comments || '-'}</td>
-          <td class="p-2 text-center">${statusBadge}</td>
-          <td class="p-2 text-right space-x-1 no-print">${actionBtns}</td>
+          <td class="p-2.5 text-center text-slate-400 font-mono text-[11px]">${r.item || '-'}</td>
+          <td class="p-2.5 font-bold text-red-600 font-mono text-xs">${r.reportNo || '-'}</td>
+          <td class="p-2.5 text-slate-800 whitespace-nowrap font-semibold">${r.date || '-'}</td>
+          <td class="p-2.5 font-bold text-slate-900">${r.client || '-'}</td>
+          <td class="p-2.5 text-slate-700 font-medium">${r.station || '-'}</td>
+          <td class="p-2.5 text-slate-600 text-[11px]">${r.type || '-'}</td>
+          <td class="p-2.5 text-slate-600 text-[11px]">${r.engineers || '-'}</td>
+          <td class="p-2.5 text-slate-500 text-[11px] line-clamp-2" title="${r.comments || ''}">${r.comments || '-'}</td>
+          <td class="p-2.5 text-center">${statusBadge}</td>
+          <td class="p-2.5 text-right space-x-1 no-print">${actionBtns}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -948,9 +933,125 @@
       });
     }
 
-    // ==========================================
-    // FORM VIEW & LANDSCAPE PAPER BINDINGS
-    // ==========================================
+    // Tab Switcher
+    function switchMainTab(tab) {
+      currentTab = tab;
+      const logContainer = document.getElementById('masterLogContainer');
+      const actionContainer = document.getElementById('actionItemsContainer');
+      const filterToolbar = document.getElementById('filterToolbar');
+      const btnLog = document.getElementById('btnTabLog');
+      const btnActions = document.getElementById('btnTabActions');
+
+      if (tab === 'log') {
+        logContainer.classList.remove('hidden');
+        actionContainer.classList.add('hidden');
+        filterToolbar.classList.remove('hidden');
+        btnLog.className = "bg-blue-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
+        btnActions.className = "bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-lg text-xs border border-amber-300";
+        renderTable();
+      } else {
+        logContainer.classList.add('hidden');
+        actionContainer.classList.remove('hidden');
+        filterToolbar.classList.add('hidden');
+        btnLog.className = "bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-2 rounded-lg text-xs border border-slate-300";
+        btnActions.className = "bg-amber-600 text-white font-bold px-3 py-2 rounded-lg text-xs shadow";
+        renderActionItemsTable();
+      }
+    }
+
+    // CSV Exports
+    function exportToCSV() {
+      const records = getMasterRecords();
+      if (!records || records.length === 0) return alert("No records to export.");
+
+      const headers = ["Item #", "Report No.", "Service Date", "Client / Site", "Ref / PO No.", "System / Station", "Service Type", "Service Engineers", "Scope & Corrective Actions", "Findings / Comments", "Status"];
+      let csvContent = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\r\n";
+
+      records.forEach(r => {
+        const row = [
+          r.item || '',
+          r.reportNo || '',
+          r.date || '',
+          r.client || '',
+          r.refPO || '',
+          r.station || '',
+          r.type || '',
+          r.engineers || '',
+          (r.scope || '').replace(/"/g, '""'),
+          (r.comments || '').replace(/"/g, '""'),
+          r.status || ''
+        ];
+        csvContent += row.map(val => `"${val}"`).join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Al-Sinan_Master_Service_Log_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+    }
+
+    function exportActionItemsCSV() {
+      const items = getActionItems();
+      const headers = ["Report No.", "Station / Equipment", "Category", "Item / Observation", "Action Required", "Assigned Engineers"];
+      let csvContent = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\r\n";
+
+      items.forEach(i => {
+        const row = [
+          i.reportNo || '',
+          i.station || '',
+          i.category || '',
+          (i.observation || '').replace(/"/g, '""'),
+          (i.action || '').replace(/"/g, '""'),
+          i.engineers || ''
+        ];
+        csvContent += row.map(v => `"${v}"`).join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Al-Sinan_Action_Items_${new Date().toISOString().slice(0,10)}.csv`;
+      link.click();
+    }
+
+    function backupJSON() {
+      const data = { masterRecords: getMasterRecords(), actionItems: getActionItems() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Al-Sinan_Database_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      link.click();
+    }
+
+    function restoreJSON() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            if (parsed.masterRecords) {
+              saveMasterRecords(parsed.masterRecords);
+              if (parsed.actionItems) localStorage.setItem(ACTION_ITEMS_KEY, JSON.stringify(parsed.actionItems));
+              alert("Database successfully restored!");
+              renderTable();
+            }
+          } catch(err) {
+            alert("Error parsing JSON: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    // Navigation & Form
     function goHome() {
       document.getElementById('reportView').classList.add('hidden');
       document.getElementById('homeView').classList.remove('hidden');
@@ -980,7 +1081,6 @@
       const r = records.find(item => String(item.reportNo) === String(reportNo));
       if (!r) return alert("Report details not found for #" + reportNo);
 
-      // Populate Form
       document.getElementById('reportNo').value = r.reportNo || '';
       document.getElementById('refNo').value = (r.refPO || '').replace('Ref: ', '').split('/')[0].trim();
       document.getElementById('travelDate').value = r.date || '';
@@ -994,7 +1094,6 @@
       document.getElementById('engrComments').value = r.comments || '';
       document.getElementById('engrName').value = r.engineers || '';
 
-      // Checkboxes
       const typeStr = (r.type || '').toUpperCase();
       document.querySelectorAll('input[name="serviceScope"]').forEach(cb => {
         cb.checked = typeStr.includes(cb.value);
@@ -1056,13 +1155,12 @@
       }
     }
 
-    // Admin Auth
     function toggleAdminLogin() {
       if (currentIsAdmin) {
         currentIsAdmin = false;
         alert("Logged out of Admin mode.");
       } else {
-        const pass = prompt("Enter Administrator Password (********):");
+        const pass = prompt("Enter Administrator Password (Default: admin123):");
         if (pass === ADMIN_PASS) {
           currentIsAdmin = true;
           alert("Admin verified. Full edit/delete permissions active.");
@@ -1084,7 +1182,7 @@
       window.open(url, '_blank');
     }
 
-    // AI SCANNER ENGINE (GEMINI 3.8 FLASH READY)
+    // AI Scanner
     async function processImageWithAI(fileInput) {
       const file = fileInput.files[0];
       if (!file) return;
