@@ -31,7 +31,7 @@
         overflow: hidden !important;
       }
       .no-print { display: none !important; }
-      #homeView, #actionItemsContainer { display: none !important; }
+      #homeView { display: none !important; }
       #reportView { display: block !important; padding: 0 !important; margin: 0 !important; }
       input, textarea, select {
         border: none !important;
@@ -103,17 +103,17 @@
     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
       <div>
         <h1 class="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 leading-snug">
-          TECHNICAL DEPARTMENT SERVICE REPORT HUB
+          Abdul Karim H. Al-Sinan & Partner Trading Co.
         </h1>
-        <p class="text-[11px] text-slate-500 font-medium">Abdul Karim H. Al-Sinan for Trading and Contracting Company</p>
+        <p class="text-[11px] text-slate-500 font-medium">Master Service Report Log & Tracking System (KAUST, SAMREF, YUNIGREEN, ETLCO, MA'ADEN, Methan)</p>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto no-print">
-        <button id="btnTabLog" onclick="switchMainTab('log')" class="flex-1 sm:flex-none bg-blue-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow">
+        <button class="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow cursor-default">
           📋 Master Log (<span id="totalLogCount">94</span>)
         </button>
-                <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow">
+        <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow">
           📥 Export CSV (Excel)
         </button>
         <button onclick="createNewReport()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow">
@@ -154,6 +154,7 @@
           <option value="Pending">Pending / In Progress</option>
         </select>
 
+        <!-- Sort Select with Our Ref No. -->
         <select id="sortSelect" onchange="renderTable()" class="col-span-2 sm:col-span-1 bg-slate-50 border border-slate-300 rounded-xl text-xs px-2.5 py-2 font-semibold text-blue-900 focus:ring-2 focus:ring-blue-500">
           <optgroup label="🔖 Reference & Numbers">
             <option value="ref-desc">Our Ref No. (Z to A / High-Low)</option>
@@ -187,17 +188,18 @@
         <table class="w-full text-left text-xs border-collapse">
           <thead class="bg-slate-100 uppercase text-[10px] font-bold border-b border-slate-200 sticky top-0 z-10 text-slate-700">
             <tr>
-              <th onclick="toggleHeaderSort('item')" class="p-2.5 w-12 text-center sortable-th"># ↕</th>
-              <th onclick="toggleHeaderSort('report')" class="p-2.5 w-20 sortable-th">Report No. ↕</th>
-              <th onclick="toggleHeaderSort('ref')" class="p-2.5 w-40 sortable-th text-blue-900 bg-blue-50/50" title="Click to sort by Reference Number">Our Ref. / PO No. 🔖 ↕</th>
-              <th onclick="toggleHeaderSort('date')" class="p-2.5 w-28 sortable-th text-blue-800" title="Click to sort by Date">Service Date 📅 ↕</th>
-              <th onclick="toggleHeaderSort('client')" class="p-2.5 w-40 sortable-th">Client / Site ↕</th>
-              <th onclick="toggleHeaderSort('station')" class="p-2.5 w-40 sortable-th">System / Station ↕</th>
-              <th onclick="toggleHeaderSort('type')" class="p-2.5 w-32 sortable-th">Service Type ↕</th>
-              <th onclick="toggleHeaderSort('engineers')" class="p-2.5 w-36 sortable-th">Engineers ↕</th>
+              <th onclick="toggleHeaderSort('item')" class="p-2.5 w-10 text-center sortable-th"># ↕</th>
+              <th onclick="toggleHeaderSort('report')" class="p-2.5 w-18 sortable-th">Report No. ↕</th>
+              <th onclick="toggleHeaderSort('ref')" class="p-2.5 w-36 sortable-th text-blue-900 bg-blue-50/50" title="Click to sort by Reference Number">Our Ref. / PO No. 🔖 ↕</th>
+              <th onclick="toggleHeaderSort('date')" class="p-2.5 w-24 sortable-th text-blue-800" title="Click to sort by Date">Service Date 📅 ↕</th>
+              <th class="p-2.5 w-24 text-center">Softcopy 📎</th>
+              <th onclick="toggleHeaderSort('client')" class="p-2.5 w-36 sortable-th">Client / Site ↕</th>
+              <th onclick="toggleHeaderSort('station')" class="p-2.5 w-36 sortable-th">System / Station ↕</th>
+              <th onclick="toggleHeaderSort('type')" class="p-2.5 w-28 sortable-th">Service Type ↕</th>
+              <th onclick="toggleHeaderSort('engineers')" class="p-2.5 w-32 sortable-th">Engineers ↕</th>
               <th class="p-2.5">Findings / Comments</th>
-              <th onclick="toggleHeaderSort('status')" class="p-2.5 w-24 text-center sortable-th">Status ↕</th>
-              <th class="p-2.5 w-20 text-right no-print">Actions</th>
+              <th onclick="toggleHeaderSort('status')" class="p-2.5 w-20 text-center sortable-th">Status ↕</th>
+              <th class="p-2.5 w-16 text-right no-print">Action</th>
             </tr>
           </thead>
           <tbody id="reportsTableBody" class="divide-y divide-slate-100"></tbody>
@@ -212,7 +214,6 @@
       </div>
     </div>
 
-    
   </div>
 
   <!-- ======================================================== -->
@@ -234,9 +235,12 @@
         </button>
       </div>
 
-      <div class="flex items-center gap-1 flex-1 max-w-xs mx-1">
-        <input type="url" id="driveLink" placeholder="Google Drive Scan URL" class="bg-slate-800 text-white text-xs px-2 py-1 rounded border border-slate-700 w-full">
-        <button type="button" onclick="testDriveLink()" class="bg-blue-600 text-white text-[11px] px-2 py-1 rounded font-bold">↗</button>
+      <!-- Individual Softcopy Link Input (Protected for Admin Mode) -->
+      <div class="flex items-center gap-1 flex-1 max-w-sm mx-1">
+        <input type="url" id="driveLink" placeholder="Google Drive Scan URL (Admin Only)" class="bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 w-full focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <button type="button" onclick="testDriveLink()" title="Open Softcopy Link in New Tab" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-2.5 py-1.5 rounded-lg font-bold">
+          ↗ Open
+        </button>
       </div>
 
       <div class="flex items-center gap-2">
@@ -456,12 +460,9 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 3. JAVASCRIPT: YOUR FIREBASE CONFIG EMBEDDED DIRECTLY    -->
+  <!-- 3. JAVASCRIPT: FIREBASE & INDIVIDUAL SOFTCOPY LOGIC      -->
   <!-- ======================================================== -->
   <script>
-    // ========================================================
-    // YOUR FIREBASE CONFIG (ALREADY INSERTED FROM SCREENSHOT):
-    // ========================================================
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBnUxUUTyj6M_KeZ1uLKATDAPX7jkb3jNs",
       authDomain: "aqms-service-report-hub.firebaseapp.com",
@@ -479,11 +480,9 @@
     let db = null;
     let cloudReports = [];
     let currentIsAdmin = false;
-    let currentTab = 'log';
 
-    // 1. INITIALIZE FIREBASE & REAL-TIME CLOUD LISTENER
+    // 1. INITIALIZE DATABASE & REALTIME CLOUD LISTENER
     function initFirebaseAndDatabase() {
-      // 1. Load locally saved reports first so screen is never empty
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
@@ -495,7 +494,6 @@
       }
       renderTable();
 
-      // 2. Connect to Firebase using your project credentials
       try {
         if (!firebase.apps.length) {
           firebase.initializeApp(FIREBASE_CONFIG);
@@ -505,10 +503,8 @@
         document.getElementById('cloudStatusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
         document.getElementById('cloudStatusText').innerHTML = `🟢 Live Cloud Connected &bull; <span id="topLiveCount">${cloudReports.length}</span> Reports Live`;
 
-        // Real-Time Firestore Sync: any change on any phone or PC syncs instantly!
         db.collection('service_reports').onSnapshot(snapshot => {
           if (snapshot.empty && cloudReports.length > 0) {
-            // First time sync: Push all reports to Firebase Cloud automatically!
             uploadLocalReportsToFirestore();
           } else if (!snapshot.empty) {
             cloudReports = [];
@@ -527,10 +523,9 @@
       }
     }
 
-    // Auto-migrate all local reports to Firestore on first connect
     async function uploadLocalReportsToFirestore() {
       if (!db || cloudReports.length === 0) return;
-      document.getElementById('cloudStatusText').innerHTML = `Uploading ${cloudReports.length} reports to Firestore Cloud...`;
+      document.getElementById('cloudStatusText').innerHTML = `Migrating ${cloudReports.length} reports to Cloud...`;
       const batch = db.batch();
       cloudReports.forEach(r => {
         const docRef = db.collection('service_reports').doc(String(r.reportNo));
@@ -739,7 +734,27 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       renderTable();
     }
 
-    // 4. RENDER TABLE & MOBILE CARDS
+    // 4. QUICK ATTACH DRIVE LINK (ADMIN ONLY FROM HOME LIST)
+    async function quickAttachDriveLink(reportNo) {
+      if (!currentIsAdmin) return alert("Administrator login required to attach or modify softcopy links.");
+      const r = cloudReports.find(item => String(item.reportNo) === String(reportNo));
+      if (!r) return;
+
+      const currentLink = r.driveLink || '';
+      const newLink = prompt(`Enter Google Drive / Softcopy URL for Report #${reportNo}:`, currentLink);
+      if (newLink !== null) {
+        r.driveLink = newLink.trim();
+        if (db) {
+          await db.collection('service_reports').doc(String(reportNo)).set(r, { merge: true });
+        } else {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
+        }
+        alert(`Softcopy link updated for Report #${reportNo}!`);
+        renderTable();
+      }
+    }
+
+    // 5. RENDER TABLE WITH DEDICATED SOFTCOPY COLUMN & BUTTON
     function renderTable() {
       const q = document.getElementById('homeSearchInput').value.toLowerCase().trim();
       const clientFilt = document.getElementById('clientFilter').value;
@@ -767,7 +782,6 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         else records = records.filter(r => !(r.status || '').toLowerCase().includes('completed'));
       }
 
-      // Sort
       records.sort((a, b) => {
         if (sortBy === 'ref-asc') return (a.refPO || '').localeCompare(b.refPO || '');
         if (sortBy === 'ref-desc') return (b.refPO || '').localeCompare(a.refPO || '');
@@ -790,11 +804,9 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       }
       document.getElementById('emptyNotice').classList.toggle('hidden', records.length > 0);
 
-      // Desktop Table
       const tbody = document.getElementById('reportsTableBody');
       tbody.innerHTML = '';
 
-      // Mobile Container
       const mobileContainer = document.getElementById('mobileCardsContainer');
       mobileContainer.innerHTML = '';
 
@@ -804,7 +816,17 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Completed</span>` :
           `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Pending'}</span>`;
 
-        // Desktop Row
+        // Softcopy Button Logic
+        let softcopyButtonHtml = '';
+        if (r.driveLink && r.driveLink.trim() !== '') {
+          softcopyButtonHtml = `<a href="${r.driveLink}" target="_blank" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold px-2 py-0.5 rounded text-[10px] inline-flex items-center gap-1">📎 Softcopy</a>`;
+        } else if (currentIsAdmin) {
+          softcopyButtonHtml = `<button onclick="quickAttachDriveLink('${r.reportNo}')" class="text-slate-400 hover:text-blue-600 text-[10px] underline font-semibold">+ Attach Link</button>`;
+        } else {
+          softcopyButtonHtml = `<span class="text-slate-300 text-[10px] italic">None</span>`;
+        }
+
+        // Desktop Row (Includes Dedicated Softcopy Column)
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b";
         tr.innerHTML = `
@@ -812,6 +834,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           <td class="p-2.5 font-bold text-red-600 font-mono text-xs">${r.reportNo || '-'}</td>
           <td class="p-2.5 font-bold text-blue-900 bg-blue-50/40 whitespace-nowrap">${r.refPO || '-'}</td>
           <td class="p-2.5 text-slate-800 whitespace-nowrap font-medium">${r.date || '-'}</td>
+          <td class="p-2.5 text-center whitespace-nowrap">${softcopyButtonHtml}</td>
           <td class="p-2.5 font-bold text-slate-900">${r.client || '-'}</td>
           <td class="p-2.5 text-slate-700 font-medium">${r.station || '-'}</td>
           <td class="p-2.5 text-slate-600 text-[11px]">${r.type || '-'}</td>
@@ -825,7 +848,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         `;
         tbody.appendChild(tr);
 
-        // Mobile Card
+        // Mobile Card (With Direct Softcopy Link)
         const card = document.createElement('div');
         card.className = "bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-2";
         card.innerHTML = `
@@ -842,18 +865,21 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           <div class="font-bold text-slate-900 text-xs">${r.client}</div>
           <div class="text-[11px] text-slate-600 font-medium">${r.station} &bull; <span class="italic text-slate-500">${r.type}</span></div>
           <div class="text-[10px] text-slate-500 font-medium">👷 ${r.engineers}</div>
-          <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-            <button onclick="openMasterReport('${r.reportNo}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-1.5 rounded-xl text-xs shadow">
-              Open Form & Print ➔
-            </button>
-            ${currentIsAdmin ? `<button onclick="deleteMasterReport('${r.reportNo}')" class="bg-red-50 text-red-600 font-bold px-3 py-1.5 rounded-xl text-xs">Delete</button>` : ''}
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div>${softcopyButtonHtml}</div>
+            <div class="space-x-1">
+              <button onclick="openMasterReport('${r.reportNo}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow">
+                Open Form ➔
+              </button>
+              ${currentIsAdmin ? `<button onclick="deleteMasterReport('${r.reportNo}')" class="bg-red-50 text-red-600 font-bold px-2 py-1.5 rounded-xl text-xs">Delete</button>` : ''}
+            </div>
           </div>
         `;
         mobileContainer.appendChild(card);
       });
     }
 
-    // 5. FORM CONTROLS & REAL-TIME SAVE
+    // 6. FORM OPEN & BINDINGS (INDIVIDUAL LINK PER REPORT LOADED)
     function openMasterReport(reportNo) {
       const r = cloudReports.find(item => String(item.reportNo) === String(reportNo));
       if (!r) return;
@@ -870,9 +896,21 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('engrComments').value = r.comments || '';
       document.getElementById('engrName').value = r.engineers || '';
 
+      // INDIVIDUAL SOFTCOPY LINK LOADED PER REPORT
+      const driveInput = document.getElementById('driveLink');
+      driveInput.value = r.driveLink || '';
+
+      // ADMIN ONLY LINK EDITING RESTRICTION
+      if (currentIsAdmin) {
+        driveInput.removeAttribute('disabled');
+        driveInput.placeholder = "Google Drive Scan URL (Admin Access)";
+      } else {
+        driveInput.setAttribute('disabled', 'disabled');
+        driveInput.placeholder = r.driveLink ? "Softcopy attached (Admin login to change)" : "No softcopy attached (Admin login to add)";
+      }
+
       const canEdit = currentIsAdmin;
-      document.querySelectorAll('#reportView input, #reportView textarea').forEach(el => {
-        if (el.id === 'driveLink') return;
+      document.querySelectorAll('#reportView input:not(#driveLink), #reportView textarea').forEach(el => {
         if (canEdit) el.removeAttribute('disabled');
         else el.setAttribute('disabled', 'disabled');
       });
@@ -891,6 +929,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         else el.checked = false;
         el.removeAttribute('disabled');
       });
+      document.getElementById('driveLink').value = '';
       document.getElementById('formAccessBadge').textContent = "New Report";
       document.getElementById('saveReportBtn').style.display = "inline-block";
       document.getElementById('homeView').classList.add('hidden');
@@ -903,6 +942,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('homeView').classList.remove('hidden');
     }
 
+    // 7. SAVE REPORT DATA (WITH INDIVIDUAL DRIVELINK SAVED)
     async function saveReportData() {
       const reportNo = document.getElementById('reportNo').value.trim();
       const refNo = document.getElementById('refNo').value.trim();
@@ -919,16 +959,15 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         engineers: document.getElementById('engrName').value,
         scope: document.getElementById('symptomsText').value,
         comments: document.getElementById('engrComments').value,
+        driveLink: document.getElementById('driveLink').value.trim(), // SAVED SPECIFIC TO THIS REPORT!
         status: "Completed",
         lastUpdated: new Date().toISOString()
       };
 
       if (db) {
-        // Save live to Firestore
         await db.collection('service_reports').doc(String(reportNo)).set(record);
         alert(`Report #${reportNo} synchronized live to Cloud Firestore!`);
       } else {
-        // Save to local cache
         const idx = cloudReports.findIndex(r => String(r.reportNo) === String(reportNo));
         if (idx >= 0) cloudReports[idx] = record;
         else cloudReports.unshift(record);
@@ -954,7 +993,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       }
     }
 
-    // 6. MASKED ADMIN LOGIN
+    // 8. MASKED ADMIN LOGIN
     function toggleAdminLogin() {
       if (currentIsAdmin) {
         currentIsAdmin = false;
@@ -986,10 +1025,10 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
     }
 
     function exportToCSV() {
-      const headers = ["Item #", "Report No.", "Our Ref / PO No.", "Service Date", "Client / Site", "Station / System", "Service Type", "Engineers", "Comments", "Status"];
+      const headers = ["Item #", "Report No.", "Our Ref / PO No.", "Service Date", "Softcopy Link", "Client / Site", "Station / System", "Service Type", "Engineers", "Comments", "Status"];
       let csv = "\uFEFF" + headers.map(h => `"${h}"`).join(",") + "\r\n";
       cloudReports.forEach((r, i) => {
-        csv += [r.item || i+1, r.reportNo, r.refPO, r.date, r.client, r.station, r.type, r.engineers, (r.comments||'').replace(/"/g, '""'), r.status].map(v => `"${v||''}"`).join(",") + "\r\n";
+        csv += [r.item || i+1, r.reportNo, r.refPO, r.date, r.driveLink || '', r.client, r.station, r.type, r.engineers, (r.comments||'').replace(/"/g, '""'), r.status].map(v => `"${v||''}"`).join(",") + "\r\n";
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement("a");
@@ -998,17 +1037,9 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       a.click();
     }
 
-    function switchMainTab(tab) {
-      document.getElementById('masterLogContainer').classList.toggle('hidden', tab !== 'log');
-      document.getElementById('actionItemsContainer').classList.toggle('hidden', tab === 'log');
-      document.getElementById('filterToolbar').classList.toggle('hidden', tab !== 'log');
-      document.getElementById('btnTabLog').className = tab === 'log' ? "bg-blue-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow" : "bg-slate-100 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs";
-      document.getElementById('btnTabActions').className = tab === 'actions' ? "bg-amber-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow" : "bg-amber-50 text-amber-900 font-bold px-3 py-2 rounded-xl text-xs border border-amber-300";
-    }
-
     function testDriveLink() {
       const url = document.getElementById('driveLink').value;
-      if (!url) return alert("Please enter a valid Google Drive link first.");
+      if (!url) return alert("No softcopy link has been attached for this report yet.");
       window.open(url, '_blank');
     }
 
