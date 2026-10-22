@@ -268,17 +268,35 @@
         </div>
 
         <div class="w-[25%] p-1.5 flex flex-col justify-between">
-          <div class="flex justify-between items-center border-b border-black pb-1">
+          <div class="flex justify-between items-center border-b border-black pb-0.5">
             <span class="font-black text-xs">Report No.:</span>
             <input type="text" id="reportNo" class="w-24 font-black text-red-600 text-sm text-right px-1" placeholder="4597">
           </div>
-          <div class="flex justify-between items-center pt-1 text-[9px]">
+          <!-- STATUS MANUAL INPUT WITH DATALIST SUGGESTIONS -->
+          <div class="flex justify-between items-center border-b border-black py-0.5 text-[9px]">
+            <span class="font-bold uppercase">Status:</span>
+            <input 
+              type="text" 
+              id="reportStatus" 
+              list="statusSuggestions" 
+              placeholder="e.g. Completed" 
+              class="font-bold text-xs bg-transparent border-none text-right focus:outline-none w-32 px-1 text-slate-800"
+            >
+            <datalist id="statusSuggestions">
+              <option value="Completed">
+              <option value="Pending">
+              <option value="Pending / In Progress">
+              <option value="Action Needed">
+              <option value="Waiting for Parts">
+            </datalist>
+          </div>
+          <div class="flex justify-between items-center pt-0.5 text-[9px]">
             <div class="flex items-center gap-1">
-              <span class="font-bold">Our Ref. No.:</span>
-              <input type="text" id="refNo" class="w-24 font-bold border-b border-black px-1" placeholder="202501923">
+              <span class="font-bold">Our Ref.:</span>
+              <input type="text" id="refNo" class="w-20 font-bold border-b border-black px-1" placeholder="202501923">
             </div>
             <div class="flex items-center gap-1 font-bold">
-              Sheet <input type="text" value="1" class="w-4 text-center border-b border-black"> of <input type="text" value="1" class="w-4 text-center border-b border-black">
+              Sheet <input type="text" value="1" class="w-3 text-center border-b border-black"> of <input type="text" value="1" class="w-3 text-center border-b border-black">
             </div>
           </div>
         </div>
@@ -358,7 +376,9 @@
       <div class="border-x border-b border-black flex items-stretch text-[9px]">
         <div class="w-[50%] border-r border-black p-1 flex items-center gap-2">
           <span class="font-bold uppercase whitespace-nowrap">UPGRADES OR CALIBRATION CHANGES:</span>
-          <input type="text" id="upgradesChanges" class="w-full border-b border-black font-semibold px-1">
+          <!-- DYNAMISKE FORSLAG TIL SYSTEM / STATION -->
+          <input type="text" id="upgradesChanges" list="stationSuggestions" class="w-full border-b border-black font-semibold px-1">
+          <datalist id="stationSuggestions"></datalist>
         </div>
         <div class="w-[50%] p-1 grid grid-cols-3 gap-x-2 gap-y-0.5 text-[8.5px] font-bold">
           <label class="flex items-center gap-1"><input type="checkbox" name="serviceScope" value="TRAINING"> TRAINING</label>
@@ -427,7 +447,12 @@
             </div>
           </div>
           <div class="pt-1">
-            <div class="flex items-center gap-1"><span class="font-bold uppercase text-[8px]">ENGINEER:</span><input type="text" id="engrName" class="flex-1 border-b border-black px-1 font-semibold"></div>
+            <div class="flex items-center gap-1">
+              <span class="font-bold uppercase text-[8px]">ENGINEER:</span>
+              <!-- DYNAMISKE FORSLAG TIL ENGINEER -->
+              <input type="text" id="engrName" list="engineerSuggestions" class="flex-1 border-b border-black px-1 font-semibold">
+              <datalist id="engineerSuggestions"></datalist>
+            </div>
             <div class="flex items-center gap-1 mt-1"><span class="font-bold uppercase text-[8px]">SIGNATURE:</span><input type="text" id="engrSign" class="flex-1 border-b border-black px-1"></div>
           </div>
         </div>
@@ -506,6 +531,61 @@
       }
     }
 
+    // POPULATE STATUS, STATION OG ENGINEER SUGGESTIONS DYNAMISK
+    function updateAllSuggestions() {
+      // 1. Status Suggestions
+      const statusList = document.getElementById('statusSuggestions');
+      if (statusList) {
+        const defaultStatuses = ['Completed', 'Pending', 'Pending / In Progress', 'Action Needed', 'Waiting for Parts'];
+        const statusSet = new Set(defaultStatuses);
+        cloudReports.forEach(r => {
+          if (r.status && r.status.trim() !== '') statusSet.add(r.status.trim());
+        });
+        statusList.innerHTML = '';
+        statusSet.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          statusList.appendChild(opt);
+        });
+      }
+
+      // 2. System / Station Suggestions
+      const stationList = document.getElementById('stationSuggestions');
+      if (stationList) {
+        const stationSet = new Set();
+        cloudReports.forEach(r => {
+          const st = (r.station || r.upgradesChanges || '').trim();
+          if (st) stationSet.add(st);
+        });
+        stationList.innerHTML = '';
+        Array.from(stationSet).sort((a, b) => a.localeCompare(b)).forEach(st => {
+          const opt = document.createElement('option');
+          opt.value = st;
+          stationList.appendChild(opt);
+        });
+      }
+
+      // 3. Engineer Suggestions
+      const engrList = document.getElementById('engineerSuggestions');
+      if (engrList) {
+        const engrSet = new Set();
+        cloudReports.forEach(r => {
+          const eg = (r.engineers || r.engrName || '').trim();
+          if (eg) {
+            // Hvis der er flere navne adskilt af komma eller skråstreg
+            eg.split(/[,/&]+/).map(n => n.trim()).filter(Boolean).forEach(singleName => engrSet.add(singleName));
+            engrSet.add(eg);
+          }
+        });
+        engrList.innerHTML = '';
+        Array.from(engrSet).sort((a, b) => a.localeCompare(b)).forEach(eg => {
+          const opt = document.createElement('option');
+          opt.value = eg;
+          engrList.appendChild(opt);
+        });
+      }
+    }
+
     // 1. INITIALIZE DATABASE & REALTIME CLOUD LISTENER
     function initFirebaseAndDatabase() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -518,6 +598,7 @@
         } catch(e) {}
       }
       updateClientFilterOptions();
+      updateAllSuggestions();
       renderTable();
 
       try {
@@ -535,6 +616,7 @@
             snapshot.forEach(doc => cloudReports.push(doc.data()));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
             updateClientFilterOptions();
+            updateAllSuggestions();
             renderTable();
           }
         }, err => {
@@ -624,7 +706,8 @@ Extract all information from this handwritten or printed service report image an
   "engrName": "",
   "engrSign": "",
   "authCustName": "",
-  "authCustSign": ""
+  "authCustSign": "",
+  "status": "Completed"
 }
 Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICATION, WARRANTY, PREVENTIVE MAINTENANCE, EMERGENCY CALL OUT, INSPECTION, CALIBRATION].`;
 
@@ -716,6 +799,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       if (data.engrSign) document.getElementById('engrSign').value = data.engrSign;
       if (data.authCustName) document.getElementById('authCustName').value = data.authCustName;
       if (data.authCustSign) document.getElementById('authCustSign').value = data.authCustSign;
+      if (data.status) document.getElementById('reportStatus').value = data.status;
     }
 
     // 3. DATE PARSER & SORTS
@@ -787,7 +871,8 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           (r.symptomsText && r.symptomsText.toLowerCase().includes(q)) ||
           (r.correctiveActionText && r.correctiveActionText.toLowerCase().includes(q)) ||
           (r.scope && r.scope.toLowerCase().includes(q)) ||
-          (r.comments && r.comments.toLowerCase().includes(q))
+          (r.comments && r.comments.toLowerCase().includes(q)) ||
+          (r.status && r.status.toLowerCase().includes(q))
         );
       }
 
@@ -834,7 +919,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       records.forEach((r, idx) => {
         const isCompleted = (r.status || '').toLowerCase().includes('completed');
         const badge = isCompleted ?
-          `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Completed</span>` :
+          `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Completed'}</span>` :
           `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Pending'}</span>`;
 
         let softcopyButtonHtml = '';
@@ -936,6 +1021,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('engrSign').value = r.engrSign || '';
       document.getElementById('authCustName').value = r.authCustName || '';
       document.getElementById('authCustSign').value = r.authCustSign || '';
+      document.getElementById('reportStatus').value = r.status || '';
 
       const selectedScopes = r.serviceScope || [];
       const typeStr = (r.type || '').toUpperCase();
@@ -974,6 +1060,9 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         el.removeAttribute('disabled');
       });
       document.getElementById('driveLink').value = '';
+      document.getElementById('reportStatus').value = '';
+      document.getElementById('upgradesChanges').value = '';
+      document.getElementById('engrName').value = '';
       document.getElementById('formAccessBadge').textContent = "New Report";
       document.getElementById('saveReportBtn').style.display = "inline-block";
       document.getElementById('homeView').classList.add('hidden');
@@ -1018,8 +1107,8 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         custPO: document.getElementById('custPO').value,
         custAddress: document.getElementById('custAddress').value,
         refPO: refNo ? `Ref: ${refNo} / PO: ${document.getElementById('custPO').value}` : `PO: ${document.getElementById('custPO').value}`,
-        station: document.getElementById('upgradesChanges').value,
-        upgradesChanges: document.getElementById('upgradesChanges').value,
+        station: document.getElementById('upgradesChanges').value.trim(),
+        upgradesChanges: document.getElementById('upgradesChanges').value.trim(),
         serviceScope: checkedScopes,
         type: checkedScopes.length > 0 ? checkedScopes.join(' / ') : "Service / Maintenance",
         
@@ -1033,13 +1122,13 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         anaRange: document.getElementById('anaRange').value,
         anaStream: document.getElementById('anaStream').value,
         anaModel: document.getElementById('anaModel').value,
-        engineers: document.getElementById('engrName').value,
-        engrName: document.getElementById('engrName').value,
+        engineers: document.getElementById('engrName').value.trim(),
+        engrName: document.getElementById('engrName').value.trim(),
         engrSign: document.getElementById('engrSign').value,
         authCustName: document.getElementById('authCustName').value,
         authCustSign: document.getElementById('authCustSign').value,
         driveLink: document.getElementById('driveLink').value.trim(),
-        status: existingIdx >= 0 ? (cloudReports[existingIdx].status || "Completed") : "Completed",
+        status: document.getElementById('reportStatus').value.trim() || "Completed",
         lastUpdated: new Date().toISOString()
       };
 
@@ -1054,6 +1143,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       }
 
       updateClientFilterOptions();
+      updateAllSuggestions();
       goHome();
       renderTable();
     }
@@ -1070,6 +1160,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           renderTable();
         }
         updateClientFilterOptions();
+        updateAllSuggestions();
       }
     }
 
