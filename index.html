@@ -103,9 +103,9 @@
     <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
       <div>
         <h1 class="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 leading-snug">
-          Abdul Karim H. Al-Sinan & Partner Trading Co.
+          KYTOS ARABIA
         </h1>
-        <p class="text-[11px] text-slate-500 font-medium">Master Service Report Log & Tracking System (KAUST, SAMREF, YUNIGREEN, ETLCO, MA'ADEN, Methan)</p>
+        <p class="text-[11px] text-slate-500 font-medium">Abdul Karim H. Al-Sinan for Trading and Contracting Co.</p>
       </div>
 
       <!-- Action Buttons -->
@@ -154,7 +154,6 @@
           <option value="Pending">Pending / In Progress</option>
         </select>
 
-        <!-- Sort Select with Our Ref No. -->
         <select id="sortSelect" onchange="renderTable()" class="col-span-2 sm:col-span-1 bg-slate-50 border border-slate-300 rounded-xl text-xs px-2.5 py-2 font-semibold text-blue-900 focus:ring-2 focus:ring-blue-500">
           <optgroup label="🔖 Reference & Numbers">
             <option value="ref-desc">Our Ref No. (Z to A / High-Low)</option>
@@ -460,7 +459,7 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 3. JAVASCRIPT: FIREBASE & INDIVIDUAL SOFTCOPY LOGIC      -->
+  <!-- 3. JAVASCRIPT: DATA, FIREBASE & FORM BINDING FIXES       -->
   <!-- ======================================================== -->
   <script>
     const FIREBASE_CONFIG = {
@@ -504,9 +503,7 @@
         document.getElementById('cloudStatusText').innerHTML = `🟢 Live Cloud Connected &bull; <span id="topLiveCount">${cloudReports.length}</span> Reports Live`;
 
         db.collection('service_reports').onSnapshot(snapshot => {
-          if (snapshot.empty && cloudReports.length > 0) {
-            uploadLocalReportsToFirestore();
-          } else if (!snapshot.empty) {
+          if (!snapshot.empty) {
             cloudReports = [];
             snapshot.forEach(doc => cloudReports.push(doc.data()));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
@@ -521,18 +518,6 @@
         console.error("Firebase init failed:", err);
         document.getElementById('cloudStatusText').innerHTML = `Offline Mode (Local Storage)`;
       }
-    }
-
-    async function uploadLocalReportsToFirestore() {
-      if (!db || cloudReports.length === 0) return;
-      document.getElementById('cloudStatusText').innerHTML = `Migrating ${cloudReports.length} reports to Cloud...`;
-      const batch = db.batch();
-      cloudReports.forEach(r => {
-        const docRef = db.collection('service_reports').doc(String(r.reportNo));
-        batch.set(docRef, r);
-      });
-      await batch.commit();
-      document.getElementById('cloudStatusText').innerHTML = `🟢 Live Cloud Connected &bull; <span id="topLiveCount">${cloudReports.length}</span> Reports Live`;
     }
 
     // 2. AI PHOTO SCANNER ENGINE
@@ -734,7 +719,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       renderTable();
     }
 
-    // 4. QUICK ATTACH DRIVE LINK (ADMIN ONLY FROM HOME LIST)
+    // 4. QUICK ATTACH DRIVE LINK (ADMIN ONLY)
     async function quickAttachDriveLink(reportNo) {
       if (!currentIsAdmin) return alert("Administrator login required to attach or modify softcopy links.");
       const r = cloudReports.find(item => String(item.reportNo) === String(reportNo));
@@ -754,7 +739,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       }
     }
 
-    // 5. RENDER TABLE WITH DEDICATED SOFTCOPY COLUMN & BUTTON
+    // 5. RENDER TABLE
     function renderTable() {
       const q = document.getElementById('homeSearchInput').value.toLowerCase().trim();
       const clientFilt = document.getElementById('clientFilter').value;
@@ -771,6 +756,8 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           (r.client && r.client.toLowerCase().includes(q)) ||
           (r.station && r.station.toLowerCase().includes(q)) ||
           (r.engineers && r.engineers.toLowerCase().includes(q)) ||
+          (r.symptomsText && r.symptomsText.toLowerCase().includes(q)) ||
+          (r.correctiveActionText && r.correctiveActionText.toLowerCase().includes(q)) ||
           (r.scope && r.scope.toLowerCase().includes(q)) ||
           (r.comments && r.comments.toLowerCase().includes(q))
         );
@@ -816,7 +803,6 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">Completed</span>` :
           `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">${r.status || 'Pending'}</span>`;
 
-        // Softcopy Button Logic
         let softcopyButtonHtml = '';
         if (r.driveLink && r.driveLink.trim() !== '') {
           softcopyButtonHtml = `<a href="${r.driveLink}" target="_blank" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold px-2 py-0.5 rounded text-[10px] inline-flex items-center gap-1">📎 Softcopy</a>`;
@@ -826,7 +812,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           softcopyButtonHtml = `<span class="text-slate-300 text-[10px] italic">None</span>`;
         }
 
-        // Desktop Row (Includes Dedicated Softcopy Column)
+        // Desktop Row
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b";
         tr.innerHTML = `
@@ -848,7 +834,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         `;
         tbody.appendChild(tr);
 
-        // Mobile Card (With Direct Softcopy Link)
+        // Mobile Card
         const card = document.createElement('div');
         card.className = "bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-2";
         card.innerHTML = `
@@ -879,34 +865,61 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       });
     }
 
-    // 6. FORM OPEN & BINDINGS (INDIVIDUAL LINK PER REPORT LOADED)
+    // 6. FORM OPEN & BINDINGS (100% FIXED: LOAD ALL FIELDS INDIVIDUALLY)
     function openMasterReport(reportNo) {
       const r = cloudReports.find(item => String(item.reportNo) === String(reportNo));
       if (!r) return;
 
       document.getElementById('reportNo').value = r.reportNo || '';
       document.getElementById('refNo').value = (r.refPO || '').replace('Ref: ', '').split('/')[0].trim();
-      document.getElementById('travelDate').value = r.date || '';
-      document.getElementById('custCompany').value = r.client || '';
-      document.getElementById('custLocation').value = (r.client || '').includes('Thuwal') ? 'Thuwal' : 'Yanbu / Jubail';
-      document.getElementById('custPO').value = (r.refPO || '').includes('PO:') ? r.refPO.split('PO:')[1].trim() : '';
-      document.getElementById('upgradesChanges').value = r.station || '';
-      document.getElementById('symptomsText').value = r.scope || '';
-      document.getElementById('correctiveActionText').value = r.scope || '';
-      document.getElementById('engrComments').value = r.comments || '';
-      document.getElementById('engrName').value = r.engineers || '';
+      document.getElementById('travelDate').value = r.travelDate || r.date || '';
+      document.getElementById('travelHours').value = r.travelHours || '';
+      document.getElementById('gatePassDate').value = r.gatePassDate || '';
+      document.getElementById('gatePassHours').value = r.gatePassHours || '';
+      document.getElementById('workStart').value = r.workStart || '';
+      document.getElementById('workDepart').value = r.workDepart || '';
+      document.getElementById('totalHours').value = r.totalHours || '';
 
-      // INDIVIDUAL SOFTCOPY LINK LOADED PER REPORT
+      document.getElementById('custCompany').value = r.custCompany || r.client || '';
+      document.getElementById('custLocation').value = r.custLocation || ((r.client || '').includes('Thuwal') ? 'Thuwal' : 'Yanbu / Jubail');
+      document.getElementById('custContact').value = r.custContact || '';
+      document.getElementById('custPhone').value = r.custPhone || '';
+      document.getElementById('custPO').value = r.custPO || ((r.refPO || '').includes('PO:') ? r.refPO.split('PO:')[1].trim() : '');
+      document.getElementById('custAddress').value = r.custAddress || '';
+      document.getElementById('upgradesChanges').value = r.upgradesChanges || r.station || '';
+
+      // INDIVIDUAL BINDING: SEPARATE SYMPTOMS AND CORRECTIVE ACTIONS!
+      document.getElementById('symptomsText').value = r.symptomsText || r.scope || '';
+      document.getElementById('correctiveActionText').value = r.correctiveActionText || r.scope || '';
+      
+      document.getElementById('engrComments').value = r.engrComments || r.comments || '';
+      document.getElementById('custComments').value = r.custComments || '';
+
+      document.getElementById('anaRange').value = r.anaRange || '';
+      document.getElementById('anaStream').value = r.anaStream || '';
+      document.getElementById('anaModel').value = r.anaModel || '';
+
+      document.getElementById('engrName').value = r.engrName || r.engineers || '';
+      document.getElementById('engrSign').value = r.engrSign || '';
+      document.getElementById('authCustName').value = r.authCustName || '';
+      document.getElementById('authCustSign').value = r.authCustSign || '';
+
+      // Checkboxes
+      const selectedScopes = r.serviceScope || [];
+      const typeStr = (r.type || '').toUpperCase();
+      document.querySelectorAll('input[name="serviceScope"]').forEach(cb => {
+        cb.checked = selectedScopes.includes(cb.value) || typeStr.includes(cb.value);
+      });
+
+      // Softcopy link
       const driveInput = document.getElementById('driveLink');
       driveInput.value = r.driveLink || '';
-
-      // ADMIN ONLY LINK EDITING RESTRICTION
       if (currentIsAdmin) {
         driveInput.removeAttribute('disabled');
         driveInput.placeholder = "Google Drive Scan URL (Admin Access)";
       } else {
         driveInput.setAttribute('disabled', 'disabled');
-        driveInput.placeholder = r.driveLink ? "Softcopy attached (Admin login to change)" : "No softcopy attached (Admin login to add)";
+        driveInput.placeholder = r.driveLink ? "Softcopy attached (Admin login to change)" : "No softcopy attached";
       }
 
       const canEdit = currentIsAdmin;
@@ -942,34 +955,69 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('homeView').classList.remove('hidden');
     }
 
-    // 7. SAVE REPORT DATA (WITH INDIVIDUAL DRIVELINK SAVED)
+    // 7. SAVE REPORT DATA (100% FIXED: CORRECTIVE ACTIONS NOW PERMANENTLY SAVED!)
     async function saveReportData() {
       const reportNo = document.getElementById('reportNo').value.trim();
       const refNo = document.getElementById('refNo').value.trim();
       if (!reportNo) return alert("Please provide Report No. before saving.");
 
+      const existingIdx = cloudReports.findIndex(r => String(r.reportNo) === String(reportNo));
+      if (existingIdx >= 0 && !currentIsAdmin) {
+        return alert("Administrator access required to save changes to existing reports.");
+      }
+
+      const checkedScopes = Array.from(document.querySelectorAll('input[name="serviceScope"]:checked')).map(cb => cb.value);
+
       const record = {
-        item: cloudReports.length + 1,
+        item: existingIdx >= 0 ? (cloudReports[existingIdx].item || existingIdx + 1) : (cloudReports.length + 1),
         reportNo: reportNo,
         date: document.getElementById('travelDate').value,
+        travelDate: document.getElementById('travelDate').value,
+        travelHours: document.getElementById('travelHours').value,
+        gatePassDate: document.getElementById('gatePassDate').value,
+        gatePassHours: document.getElementById('gatePassHours').value,
+        workStart: document.getElementById('workStart').value,
+        workDepart: document.getElementById('workDepart').value,
+        totalHours: document.getElementById('totalHours').value,
         client: document.getElementById('custCompany').value,
+        custCompany: document.getElementById('custCompany').value,
+        custLocation: document.getElementById('custLocation').value,
+        custContact: document.getElementById('custContact').value,
+        custPhone: document.getElementById('custPhone').value,
+        custPO: document.getElementById('custPO').value,
+        custAddress: document.getElementById('custAddress').value,
         refPO: refNo ? `Ref: ${refNo} / PO: ${document.getElementById('custPO').value}` : `PO: ${document.getElementById('custPO').value}`,
         station: document.getElementById('upgradesChanges').value,
-        type: "Service / Maintenance",
-        engineers: document.getElementById('engrName').value,
-        scope: document.getElementById('symptomsText').value,
+        upgradesChanges: document.getElementById('upgradesChanges').value,
+        serviceScope: checkedScopes,
+        type: checkedScopes.length > 0 ? checkedScopes.join(' / ') : "Service / Maintenance",
+        
+        // PERMANENT FIX: SEPARATELY SAVING SYMPTOMS & CORRECTIVE ACTIONS
+        symptomsText: document.getElementById('symptomsText').value,
+        correctiveActionText: document.getElementById('correctiveActionText').value,
+        scope: document.getElementById('correctiveActionText').value || document.getElementById('symptomsText').value,
+        
         comments: document.getElementById('engrComments').value,
-        driveLink: document.getElementById('driveLink').value.trim(), // SAVED SPECIFIC TO THIS REPORT!
-        status: "Completed",
+        engrComments: document.getElementById('engrComments').value,
+        custComments: document.getElementById('custComments').value,
+        anaRange: document.getElementById('anaRange').value,
+        anaStream: document.getElementById('anaStream').value,
+        anaModel: document.getElementById('anaModel').value,
+        engineers: document.getElementById('engrName').value,
+        engrName: document.getElementById('engrName').value,
+        engrSign: document.getElementById('engrSign').value,
+        authCustName: document.getElementById('authCustName').value,
+        authCustSign: document.getElementById('authCustSign').value,
+        driveLink: document.getElementById('driveLink').value.trim(),
+        status: existingIdx >= 0 ? (cloudReports[existingIdx].status || "Completed") : "Completed",
         lastUpdated: new Date().toISOString()
       };
 
       if (db) {
         await db.collection('service_reports').doc(String(reportNo)).set(record);
-        alert(`Report #${reportNo} synchronized live to Cloud Firestore!`);
+        alert(`Report #${reportNo} permanently saved and synchronized to Cloud Firestore!`);
       } else {
-        const idx = cloudReports.findIndex(r => String(r.reportNo) === String(reportNo));
-        if (idx >= 0) cloudReports[idx] = record;
+        if (existingIdx >= 0) cloudReports[existingIdx] = record;
         else cloudReports.unshift(record);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
         alert(`Report #${reportNo} has been saved locally!`);
