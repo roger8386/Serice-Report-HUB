@@ -111,7 +111,7 @@
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto no-print">
         <button class="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow cursor-default">
-          📋 Master Log (<span id="totalLogCount">94</span>)
+          📋 Master Log (<span id="totalLogCount">0</span>)
         </button>
         <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center justify-center gap-1 shadow">
           📥 Export CSV (Excel)
@@ -140,12 +140,6 @@
       <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
         <select id="clientFilter" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs px-2.5 py-2 font-medium">
           <option value="ALL">All Clients / Sites</option>
-          <option value="KAUST">KAUST (Thuwal)</option>
-          <option value="SAMREF">SAMREF (Yanbu)</option>
-          <option value="YUNIGREEN">YUNIGREEN (Yanbu)</option>
-          <option value="MA'ADEN">MA'ADEN (Riyadh)</option>
-          <option value="ETLCO">ETLCO (Jubail)</option>
-          <option value="Methan">Methan Mobile</option>
         </select>
 
         <select id="statusFilter" onchange="renderTable()" class="bg-slate-50 border border-slate-300 rounded-xl text-xs px-2.5 py-2 font-medium">
@@ -480,6 +474,38 @@
     let cloudReports = [];
     let currentIsAdmin = false;
 
+    // POPULATE CLIENT FILTER DROPDOWN AUTOMATICALLY
+    function updateClientFilterOptions() {
+      const clientFilter = document.getElementById('clientFilter');
+      if (!clientFilter) return;
+
+      const currentSelected = clientFilter.value;
+      const clientSet = new Set();
+
+      cloudReports.forEach(r => {
+        const name = (r.client || r.custCompany || '').trim();
+        if (name) clientSet.add(name);
+      });
+
+      const sortedClients = Array.from(clientSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+      clientFilter.innerHTML = '<option value="ALL">All Clients / Sites</option>';
+
+      sortedClients.forEach(client => {
+        const opt = document.createElement('option');
+        opt.value = client;
+        opt.textContent = client;
+        if (client.toLowerCase() === currentSelected.toLowerCase()) {
+          opt.selected = true;
+        }
+        clientFilter.appendChild(opt);
+      });
+
+      if (currentSelected !== 'ALL' && !sortedClients.some(c => c.toLowerCase() === currentSelected.toLowerCase())) {
+        clientFilter.value = 'ALL';
+      }
+    }
+
     // 1. INITIALIZE DATABASE & REALTIME CLOUD LISTENER
     function initFirebaseAndDatabase() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -491,6 +517,7 @@
           }
         } catch(e) {}
       }
+      updateClientFilterOptions();
       renderTable();
 
       try {
@@ -507,6 +534,7 @@
             cloudReports = [];
             snapshot.forEach(doc => cloudReports.push(doc.data()));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
+            updateClientFilterOptions();
             renderTable();
           }
         }, err => {
@@ -763,7 +791,13 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         );
       }
 
-      if (clientFilt !== 'ALL') records = records.filter(r => r.client && r.client.toUpperCase().includes(clientFilt.toUpperCase()));
+      if (clientFilt !== 'ALL') {
+        records = records.filter(r => {
+          const clientName = (r.client || r.custCompany || '').trim().toLowerCase();
+          return clientName === clientFilt.toLowerCase();
+        });
+      }
+
       if (statusFilt !== 'ALL') {
         if (statusFilt === 'Completed') records = records.filter(r => (r.status || '').toLowerCase().includes('completed'));
         else records = records.filter(r => !(r.status || '').toLowerCase().includes('completed'));
@@ -865,7 +899,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       });
     }
 
-    // 6. FORM OPEN & BINDINGS (100% FIXED: LOAD ALL FIELDS INDIVIDUALLY)
+    // 6. FORM OPEN & BINDINGS
     function openMasterReport(reportNo) {
       const r = cloudReports.find(item => String(item.reportNo) === String(reportNo));
       if (!r) return;
@@ -888,7 +922,6 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('custAddress').value = r.custAddress || '';
       document.getElementById('upgradesChanges').value = r.upgradesChanges || r.station || '';
 
-      // INDIVIDUAL BINDING: SEPARATE SYMPTOMS AND CORRECTIVE ACTIONS!
       document.getElementById('symptomsText').value = r.symptomsText || r.scope || '';
       document.getElementById('correctiveActionText').value = r.correctiveActionText || r.scope || '';
       
@@ -904,14 +937,12 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('authCustName').value = r.authCustName || '';
       document.getElementById('authCustSign').value = r.authCustSign || '';
 
-      // Checkboxes
       const selectedScopes = r.serviceScope || [];
       const typeStr = (r.type || '').toUpperCase();
       document.querySelectorAll('input[name="serviceScope"]').forEach(cb => {
         cb.checked = selectedScopes.includes(cb.value) || typeStr.includes(cb.value);
       });
 
-      // Softcopy link
       const driveInput = document.getElementById('driveLink');
       driveInput.value = r.driveLink || '';
       if (currentIsAdmin) {
@@ -955,7 +986,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
       document.getElementById('homeView').classList.remove('hidden');
     }
 
-    // 7. SAVE REPORT DATA (100% FIXED: CORRECTIVE ACTIONS NOW PERMANENTLY SAVED!)
+    // 7. SAVE REPORT DATA
     async function saveReportData() {
       const reportNo = document.getElementById('reportNo').value.trim();
       const refNo = document.getElementById('refNo').value.trim();
@@ -992,7 +1023,6 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         serviceScope: checkedScopes,
         type: checkedScopes.length > 0 ? checkedScopes.join(' / ') : "Service / Maintenance",
         
-        // PERMANENT FIX: SEPARATELY SAVING SYMPTOMS & CORRECTIVE ACTIONS
         symptomsText: document.getElementById('symptomsText').value,
         correctiveActionText: document.getElementById('correctiveActionText').value,
         scope: document.getElementById('correctiveActionText').value || document.getElementById('symptomsText').value,
@@ -1023,6 +1053,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
         alert(`Report #${reportNo} has been saved locally!`);
       }
 
+      updateClientFilterOptions();
       goHome();
       renderTable();
     }
@@ -1038,6 +1069,7 @@ Extract checkboxes for serviceScope from: [TRAINING, START-UP, REPAIR, MODIFICAT
           localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudReports));
           renderTable();
         }
+        updateClientFilterOptions();
       }
     }
 
